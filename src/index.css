@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --color-forest-950: #061e12;
+    --color-forest-900: #0d3824;
+    --color-forest-800: #124d32;
+    --color-forest-700: #186341;
+    --color-forest-600: #1d7e52;
+    --color-forest-500: #229964;
+    --color-forest-400: #34b57b;
+    --color-forest-300: #5ece98;
+    --color-forest-200: #96e4bd;
+    --color-forest-100: #cef4df;
+    --color-forest-50: #ebfbf3;
+
+    --brand-primary: #0d3824;
+    --brand-emerald: #10b981;
+    --brand-teal: #0d9488;
+    
+    --bg-app: #f8faf9;
+    --bg-surface: #ffffff;
+    --bg-surface-subtle: #f1f5f3;
+    --border-subtle: #e2e8e5;
+    --border-strong: #cbd5e1;
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+  }
+
+  .dark {
+    --brand-primary: #10b981;
+    --brand-emerald: #34d399;
+    --brand-teal: #14b8a6;
+    
+    --bg-app: #080d0b;
+    --bg-surface: #0f1714;
+    --bg-surface-subtle: #141f1b;
+    --border-subtle: #1c2e27;
+    --border-strong: #2a453b;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+  }
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.45);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.35);
+}
+
+/* Glass & Card subtle utilities */
+.esg-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8e5;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease-in-out;
+}
+
+.dark .esg-card {
+  background-color: #0f1714;
+  border-color: #1c2e27;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+}
+
+.esg-card-hover:hover {
+  border-color: #10b981;
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.08), 0 4px 6px -4px rgba(16, 185, 129, 0.08);
+  transform: translateY(-1px);
+}
+
+.dark .esg-card-hover:hover {
+  border-color: #059669;
+  box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.15), 0 4px 6px -4px rgba(5, 150, 105, 0.15);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}
