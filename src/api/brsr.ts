@@ -8,18 +8,35 @@ export const brsrApi = {
   },
 
   getPrinciples: async (): Promise<BRSRPrinciple[]> => {
-    const res = await apiClient.get<BRSRPrinciple[]>('/brsr/principles');
-    return res.data;
+    try {
+      const res = await apiClient.get<BRSRPrinciple[]>('/brsr/principles');
+      if (Array.isArray(res.data)) return res.data;
+      return [];
+    } catch (err) {
+      console.error('Error fetching BRSR principles:', err);
+      return [];
+    }
   },
 
   getIndicators: async (): Promise<BRSRIndicator[]> => {
-    const res = await apiClient.get<BRSRIndicator[]>('/brsr/indicators');
-    return res.data;
+    try {
+      const res = await apiClient.get<BRSRIndicator[]>('/brsr/indicators');
+      if (Array.isArray(res.data)) return res.data;
+      return [];
+    } catch (err) {
+      console.error('Error fetching BRSR indicators:', err);
+      return [];
+    }
   },
 
   getResponses: async () => {
-    const res = await apiClient.get('/brsr/responses');
-    return res.data;
+    try {
+      const res = await apiClient.get('/brsr/responses');
+      return res.data || [];
+    } catch (err) {
+      console.error('Error fetching BRSR responses:', err);
+      return [];
+    }
   },
 
   saveResponse: async (payload: {

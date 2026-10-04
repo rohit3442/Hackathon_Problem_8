@@ -92,9 +92,9 @@ export const Projects: React.FC = () => {
     }
   });
 
-  // Filter projects
   const filteredProjects = useMemo(() => {
-    return projects.filter(p => {
+    const list = Array.isArray(projects) ? projects : [];
+    return list.filter(p => {
       if (selectedSub !== 'all' && p.subsidiaryId !== selectedSub) return false;
       if (selectedBU !== 'all' && p.businessUnitId !== selectedBU) return false;
       if (selectedStatus !== 'all' && p.approvalStatus !== selectedStatus) return false;

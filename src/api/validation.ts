@@ -13,13 +13,24 @@ export interface AnomalyCheckResult {
 
 export const validationApi = {
   getAlerts: async (): Promise<ValidationAlert[]> => {
-    const res = await apiClient.get<ValidationAlert[]>('/validation');
-    return res.data;
+    try {
+      const res = await apiClient.get<ValidationAlert[]>('/validation');
+      if (Array.isArray(res.data)) return res.data;
+      return [];
+    } catch (err) {
+      console.error('Error fetching validation alerts:', err);
+      return [];
+    }
   },
 
-  getAlertById: async (id: string): Promise<ValidationAlert> => {
-    const res = await apiClient.get<ValidationAlert>(`/validation/${id}`);
-    return res.data;
+  getAlertById: async (id: string): Promise<ValidationAlert | null> => {
+    try {
+      const res = await apiClient.get<ValidationAlert>(`/validation/${id}`);
+      return res.data;
+    } catch (err) {
+      console.error(`Error fetching validation alert ${id}:`, err);
+      return null;
+    }
   },
 
   runValidationScan: async () => {

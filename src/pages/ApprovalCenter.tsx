@@ -28,6 +28,8 @@ export const ApprovalCenter: React.FC = () => {
     queryFn: approvalsApi.getApprovals,
   });
 
+  const approvalList = Array.isArray(approvals) ? approvals : [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -78,7 +80,16 @@ export const ApprovalCenter: React.FC = () => {
 
       {/* Submissions List */}
       <div className="space-y-4">
-        {approvals.map(appr => (
+        {isLoading ? (
+          <div className="p-8 text-center text-slate-500">Loading governance workflows...</div>
+        ) : approvalList.length === 0 ? (
+          <Card className="p-8 text-center text-slate-500">
+            <ShieldCheck className="w-10 h-10 mx-auto text-slate-400 mb-2" />
+            <p className="font-semibold text-slate-700 dark:text-slate-300">No approval workflows pending</p>
+            <p className="text-xs text-slate-500">All stage submissions have been validated and approved.</p>
+          </Card>
+        ) : (
+          approvalList.map(appr => (
           <Card key={appr.id} className="p-5 space-y-4 hover:shadow-md transition-shadow">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="space-y-1">
@@ -134,8 +145,9 @@ export const ApprovalCenter: React.FC = () => {
                 );
               })}
             </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );

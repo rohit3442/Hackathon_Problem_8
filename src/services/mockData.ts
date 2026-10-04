@@ -63,14 +63,25 @@ export const MOCK_USERS: UserProfile[] = [
     avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80'
   },
   {
+    id: 'u-demo-gam',
+    name: 'Group Admin & Management Officer',
+    email: 'group.admin@ecometrics.demo',
+    corporateId: 'EMP-GAM-001',
+    password: 'Password@123',
+    role: 'group_admin_management',
+    roleTitle: 'Group Admin & Executive Director',
+    organization: 'Apex Infrastructure Group Limited',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
+  },
+  {
     id: 'u-5',
     name: 'Rekha Nair',
     email: 'rekha.nair@meil.in',
     corporateId: 'EMP-GA-9001',
     password: 'Password@123',
-    role: 'group_admin',
+    role: 'group_admin_management',
     roleTitle: 'Group Executive VP & Compliance Officer',
-    organization: 'MEIL Group',
+    organization: 'Apex Infrastructure Group Limited',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
   },
   {
@@ -79,12 +90,12 @@ export const MOCK_USERS: UserProfile[] = [
     email: 'deepak.khaitan@meil.in',
     corporateId: 'EMP-EXEC-001',
     password: 'Password@123',
-    role: 'management',
+    role: 'group_admin_management',
     roleTitle: 'Managing Director & Board ESG Chair',
-    organization: 'MEIL Group',
+    organization: 'Apex Infrastructure Group Limited',
     avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&auto=format&fit=crop&q=80'
   },
-  // Legacy aliases for backward compatibility
+  // Aliases for backward compatibility
   {
     id: 'u-1-alias',
     name: 'Rajesh Verma (Apex)',
@@ -93,7 +104,7 @@ export const MOCK_USERS: UserProfile[] = [
     password: 'Password@123',
     role: 'project_user',
     roleTitle: 'Project Sustainability Lead',
-    organization: 'Apex Infrastructure Group',
+    organization: 'Apex Infrastructure Group Limited',
     subsidiary: 'Apex Heavy Engineering & Construction',
     businessUnit: 'Renewables & Power Transmission',
     project: 'Solar Mega-Park 500MW (SMP-500)'
@@ -106,7 +117,7 @@ export const MOCK_USERS: UserProfile[] = [
     password: 'Password@123',
     role: 'bu_manager',
     roleTitle: 'Business Unit General Manager',
-    organization: 'Apex Infrastructure Group',
+    organization: 'Apex Infrastructure Group Limited',
     subsidiary: 'Apex Heavy Engineering & Construction',
     businessUnit: 'Renewables & Power Transmission'
   },
@@ -118,7 +129,7 @@ export const MOCK_USERS: UserProfile[] = [
     password: 'Password@123',
     role: 'esg_team',
     roleTitle: 'Chief Sustainability Officer',
-    organization: 'Apex Infrastructure Group'
+    organization: 'Apex Infrastructure Group Limited'
   },
   {
     id: 'u-5-alias',
@@ -126,9 +137,9 @@ export const MOCK_USERS: UserProfile[] = [
     email: 'arvind.mehra@apexinfratech.com',
     corporateId: 'APX-9001',
     password: 'Password@123',
-    role: 'group_admin',
+    role: 'group_admin_management',
     roleTitle: 'Group Executive VP & Compliance Officer',
-    organization: 'Apex Infrastructure Group'
+    organization: 'Apex Infrastructure Group Limited'
   },
   {
     id: 'u-6-alias',
@@ -136,9 +147,9 @@ export const MOCK_USERS: UserProfile[] = [
     email: 'priya.nair@apexinfratech.com',
     corporateId: 'APX-001',
     password: 'Password@123',
-    role: 'management',
+    role: 'group_admin_management',
     roleTitle: 'Board Member & ESG Committee Chair',
-    organization: 'Apex Infrastructure Group'
+    organization: 'Apex Infrastructure Group Limited'
   }
 ];
 

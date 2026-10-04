@@ -51,7 +51,8 @@ export const GroupAdminDashboard: React.FC = () => {
   });
 
   const subsidiaries = orgData?.subsidiaries || [];
-  const pendingApprovalsCount = workflows.filter(w => w.overallStatus !== 'approved').length;
+  const workflowList = Array.isArray(workflows) ? workflows : [];
+  const pendingApprovalsCount = workflowList.filter(w => w.overallStatus !== 'approved').length;
 
   return (
     <div className="space-y-6">

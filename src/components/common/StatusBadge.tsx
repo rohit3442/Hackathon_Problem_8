@@ -13,7 +13,11 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   size = 'md',
   className = '',
 }) => {
-  const normalized = status.toLowerCase();
+  if (!status) {
+    return <Badge variant="slate" size={size} className={className}>—</Badge>;
+  }
+
+  const normalized = String(status).toLowerCase();
 
   switch (normalized) {
     case 'draft':

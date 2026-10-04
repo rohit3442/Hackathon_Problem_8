@@ -39,10 +39,17 @@ export const BRSRSectionC: React.FC = () => {
     queryFn: () => projectsApi.getProjectById('proj-1'),
   });
 
+  const { data: livePrinciples = [] } = useQuery({
+    queryKey: ['brsrPrinciples'],
+    queryFn: brsrApi.getPrinciples,
+  });
+
   const { data: liveIndicators = [] } = useQuery({
     queryKey: ['brsrIndicators'],
     queryFn: brsrApi.getIndicators,
   });
+
+  const principles = Array.isArray(livePrinciples) && livePrinciples.length > 0 ? livePrinciples : MOCK_BRSR_PRINCIPLES;
 
   const electricity = project?.environmentalData?.electricityKwh || 100000;
   const fuel = project?.environmentalData?.fuelLitres || 25000;
@@ -82,7 +89,7 @@ export const BRSRSectionC: React.FC = () => {
     }
   }, [project, electricity, fuel, totalEnergyGj]);
 
-  const currentPrinciple = MOCK_BRSR_PRINCIPLES.find(p => p.number === selectedPrincipleNum) || MOCK_BRSR_PRINCIPLES[5];
+  const currentPrinciple = principles.find(p => p.number === selectedPrincipleNum) || principles[5] || principles[0];
 
   const filteredIndicators = indicators.filter(
     ind => ind.principle === selectedPrincipleNum && ind.type === activeTab
@@ -136,7 +143,7 @@ export const BRSRSectionC: React.FC = () => {
 
       {/* Principle Selector Horizontal Carousel / Bar */}
       <div className="flex overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 gap-2">
-        {MOCK_BRSR_PRINCIPLES.map(p => {
+        {principles.map(p => {
           const isSelected = selectedPrincipleNum === p.number;
           return (
             <button

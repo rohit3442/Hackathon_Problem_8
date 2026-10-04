@@ -75,5 +75,31 @@ export const esgApi = {
   saveGovernance: async (payload: GovernanceDataPayload) => {
     const res = await apiClient.post('/esg/governance', payload);
     return res.data;
+  },
+
+  getESGMetrics: async (category?: string, projectCode?: string): Promise<any[]> => {
+    try {
+      const params: any = {};
+      if (category) params.category = category;
+      if (projectCode) params.projectCode = projectCode;
+      const res = await apiClient.get<any[]>('/esg/metrics', { params });
+      if (Array.isArray(res.data) && res.data.length > 0) return res.data;
+      const { MOCK_ESG_METRICS } = await import('../services/mockData');
+      return category ? MOCK_ESG_METRICS.filter(m => m.category === category) : MOCK_ESG_METRICS;
+    } catch (err) {
+      console.error('Error fetching ESG metrics:', err);
+      const { MOCK_ESG_METRICS } = await import('../services/mockData');
+      return category ? MOCK_ESG_METRICS.filter(m => m.category === category) : MOCK_ESG_METRICS;
+    }
+  },
+
+  updateESGMetric: async (id: string, updates: any) => {
+    try {
+      const res = await apiClient.put(`/esg/metrics/${id}`, updates);
+      return res.data;
+    } catch (err) {
+      console.error(`Error updating ESG metric ${id}:`, err);
+      return null;
+    }
   }
 };

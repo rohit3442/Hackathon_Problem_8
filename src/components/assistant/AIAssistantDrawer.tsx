@@ -54,7 +54,7 @@ export const AIAssistantDrawer: React.FC = () => {
       let reply = '';
       let actions: ChatMessage['actions'] = [];
 
-      const query = text.toLowerCase();
+      const query = (text || '').toLowerCase();
       if (query.includes('anomal') || query.includes('outlier') || query.includes('warning') || query.includes('error')) {
         reply = `I analyzed 4 active validation records in the Validation Center:\n\n1. **Effluent BOD Concentration (WWRP-02)**: Reported at 38.4 mg/L vs CPCB consent limit of 30 mg/L (Critical Error).\n2. **Scope 3 Supply Chain Logistics (SMP-500)**: Subcontractor logs used DEFRA 2024 instead of Indian CEA grid factors (Warning).\n3. **Labor Turnover Spike (GH2-01)**: Turnover jumped to 42.6% due to demobilization of specialized piping labor. Justification required.\n\nRecommendation: Review the BOD reading with plant EHS leads before finalizing the BRSR submission.`;
         actions = [{ label: 'Go to Validation Center', href: '/validation' }];

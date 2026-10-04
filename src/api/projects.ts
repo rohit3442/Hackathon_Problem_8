@@ -12,8 +12,17 @@ export interface ProjectDetail extends Project {
 
 export const projectsApi = {
   getProjects: async (): Promise<Project[]> => {
-    const res = await apiClient.get<Project[]>('/projects');
-    return res.data;
+    try {
+      const res = await apiClient.get<Project[]>('/projects');
+      if (Array.isArray(res.data)) return res.data;
+      if (res.data && typeof res.data === 'object' && Array.isArray((res.data as any).projects)) {
+        return (res.data as any).projects;
+      }
+      return [];
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+      return [];
+    }
   },
 
   getProjectById: async (id: string): Promise<ProjectDetail> => {

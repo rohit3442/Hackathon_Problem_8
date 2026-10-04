@@ -1354,6 +1354,17 @@
   ],
   "audit_logs": [
     {
+      "id": "aud-1791116726898-898",
+      "timestamp": "2026-10-04 12:25:26",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Sustainability Lead",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-1",
+      "newValue": "User authenticated successfully with role project_user",
+      "ipAddress": "127.0.0.1"
+    },
+    {
       "id": "aud-1791037052390-680",
       "timestamp": "2026-10-03 14:17:32",
       "userName": "Project User",

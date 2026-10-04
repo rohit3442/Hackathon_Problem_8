@@ -37,7 +37,7 @@ export const Subsidiaries: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {subsidiaries.map((sub) => (
+        {(Array.isArray(subsidiaries) ? subsidiaries : []).map((sub) => (
           <Card key={sub.id} className="p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="space-y-3">
               <div className="flex items-center justify-between">

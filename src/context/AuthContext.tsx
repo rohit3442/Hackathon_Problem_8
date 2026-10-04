@@ -14,6 +14,7 @@ interface AuthContextType {
   canValidateESG: boolean;
   canFinalApprove: boolean;
   canPublishReports: boolean;
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,7 +25,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const savedUserId = sessionStorage.getItem('eco_metrics_active_user');
       if (savedUserId) {
         const found = MOCK_USERS.find(u => u.id === savedUserId);
-        if (found) return found;
+        if (found) {
+          if (found.role === ('group_admin' as any) || found.role === ('management' as any)) {
+            return { ...found, role: 'group_admin_management' as UserRole, roleTitle: 'Group Admin & Executive Director' };
+          }
+          return found;
+        }
       }
     } catch (e) {}
     // Starts unauthenticated so web portal opens with login page
@@ -39,8 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [user]);
 
-  const switchRole = (role: UserRole) => {
-    const targetUser = MOCK_USERS.find(u => u.role === role) || MOCK_USERS[0];
+  const switchRole = (newRole: UserRole) => {
+    const normalizedRole = (newRole === ('group_admin' as any) || newRole === ('management' as any)) 
+      ? 'group_admin_management' 
+      : newRole;
+    const targetUser = MOCK_USERS.find(u => u.role === normalizedRole) || MOCK_USERS[0];
     setUser(targetUser);
   };
 
@@ -63,18 +72,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
+    const normalizedRequestedRole = (role === ('group_admin' as any) || role === ('management' as any)) ? 'group_admin_management' : role;
+    const userRole = (targetUser.role === ('group_admin' as any) || targetUser.role === ('management' as any)) ? 'group_admin_management' : targetUser.role;
+
     // Strict Role Enforcement
-    if (role && targetUser.role !== role) {
+    if (normalizedRequestedRole && userRole !== normalizedRequestedRole) {
       const roleLabels: Record<string, string> = {
-        project_user: 'Project User',
-        bu_manager: 'Business Manager',
+        project_user: 'Project Manager',
+        bu_manager: 'Business Unit Manager',
         subsidiary_admin: 'Subsidiary Admin',
-        esg_team: 'ESG Team',
-        group_admin: 'Group Admin',
-        management: 'Management'
+        esg_team: 'ESG / Sustainability Team',
+        group_admin_management: 'Group Admin & Management'
       };
-      const userRoleLabel = roleLabels[targetUser.role] || targetUser.role;
-      const requestedRoleLabel = roleLabels[role] || role;
+      const userRoleLabel = roleLabels[userRole] || userRole;
+      const requestedRoleLabel = roleLabels[normalizedRequestedRole] || normalizedRequestedRole;
 
       return {
         success: false,
@@ -90,7 +101,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       };
     }
 
-    setUser(targetUser);
+    const authenticatedUser = {
+      ...targetUser,
+      role: userRole as UserRole
+    };
+
+    setUser(authenticatedUser);
     return { success: true };
   };
 
@@ -99,13 +115,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     sessionStorage.removeItem('eco_metrics_active_user');
   };
 
-  const role = user?.role;
-  const canEditData = role === 'project_user' || role === 'esg_team' || role === 'group_admin';
-  const canReviewBU = role === 'bu_manager' || role === 'subsidiary_admin' || role === 'group_admin';
-  const canApproveSubsidiary = role === 'subsidiary_admin' || role === 'group_admin';
-  const canValidateESG = role === 'esg_team' || role === 'group_admin';
-  const canFinalApprove = role === 'group_admin' || role === 'management';
-  const canPublishReports = role === 'esg_team' || role === 'group_admin' || role === 'management';
+  const role = (user?.role === ('group_admin' as any) || user?.role === ('management' as any)) ? 'group_admin_management' : user?.role;
+  const canEditData = role === 'project_user';
+  const canReviewBU = role === 'bu_manager';
+  const canApproveSubsidiary = role === 'subsidiary_admin';
+  const canValidateESG = role === 'esg_team';
+  const canFinalApprove = role === 'group_admin_management';
+  const canPublishReports = role === 'esg_team' || role === 'group_admin_management';
+  const isAdmin = role === 'group_admin_management';
 
   return (
     <AuthContext.Provider
@@ -121,6 +138,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         canValidateESG,
         canFinalApprove,
         canPublishReports,
+        isAdmin,
       }}
     >
       {children}

@@ -10,8 +10,14 @@ export interface SDGMappingPayload {
 
 export const sdgApi = {
   getSDGs: async (): Promise<{ goals: SDGGoal[]; mappings: any[] }> => {
-    const res = await apiClient.get<{ goals: SDGGoal[]; mappings: any[] }>('/sdgs');
-    return res.data;
+    try {
+      const res = await apiClient.get<{ goals: SDGGoal[]; mappings: any[] }>('/sdgs');
+      if (res.data && Array.isArray(res.data.goals)) return res.data;
+      return { goals: [], mappings: [] };
+    } catch (err) {
+      console.error('Error fetching SDGs:', err);
+      return { goals: [], mappings: [] };
+    }
   },
 
   createMapping: async (payload: SDGMappingPayload) => {

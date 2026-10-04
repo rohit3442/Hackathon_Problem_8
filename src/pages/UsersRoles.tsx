@@ -176,7 +176,7 @@ export const UsersRoles: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {usersList.map(u => (
+              {(Array.isArray(usersList) ? usersList : []).map(u => (
                 <tr key={u.id} className="hover:bg-slate-50 dark:hover:bg-[#141f1b] transition-colors">
                   <td className="py-3 px-3">
                     <div className="flex items-center gap-2.5">

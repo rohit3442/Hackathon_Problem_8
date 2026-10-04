@@ -270,14 +270,25 @@ export function getInitialSeedData(): DBState {
         avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80'
       },
       {
+        id: 'u-demo-gam',
+        name: 'Group Admin & Management Officer',
+        email: 'group.admin@ecometrics.demo',
+        corporateId: 'EMP-GAM-001',
+        password: 'Password@123',
+        role: 'group_admin_management',
+        roleTitle: 'Group Admin & Executive Director',
+        organization: 'Apex Infrastructure Group Limited',
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
+      },
+      {
         id: 'u-5',
         name: 'Rekha Nair',
         email: 'rekha.nair@meil.in',
         corporateId: 'EMP-GA-9001',
         password: 'Password@123',
-        role: 'group_admin',
+        role: 'group_admin_management',
         roleTitle: 'Group Executive VP & Compliance Officer',
-        organization: 'MEIL Group',
+        organization: 'Apex Infrastructure Group Limited',
         avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
       },
       {
@@ -286,9 +297,9 @@ export function getInitialSeedData(): DBState {
         email: 'deepak.khaitan@meil.in',
         corporateId: 'EMP-EXEC-001',
         password: 'Password@123',
-        role: 'management',
+        role: 'group_admin_management',
         roleTitle: 'Managing Director & Board ESG Chair',
-        organization: 'MEIL Group',
+        organization: 'Apex Infrastructure Group Limited',
         avatar: 'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&auto=format&fit=crop&q=80'
       },
       {
@@ -299,7 +310,7 @@ export function getInitialSeedData(): DBState {
         password: 'Password@123',
         role: 'project_user',
         roleTitle: 'Project Sustainability Lead',
-        organization: 'Apex Infrastructure Group'
+        organization: 'Apex Infrastructure Group Limited'
       },
       {
         id: 'u-2-alias',
@@ -309,7 +320,7 @@ export function getInitialSeedData(): DBState {
         password: 'Password@123',
         role: 'bu_manager',
         roleTitle: 'Business Unit General Manager',
-        organization: 'Apex Infrastructure Group'
+        organization: 'Apex Infrastructure Group Limited'
       },
       {
         id: 'u-4-alias',
@@ -319,7 +330,7 @@ export function getInitialSeedData(): DBState {
         password: 'Password@123',
         role: 'esg_team',
         roleTitle: 'Chief Sustainability Officer',
-        organization: 'Apex Infrastructure Group'
+        organization: 'Apex Infrastructure Group Limited'
       },
       {
         id: 'u-5-alias',
@@ -327,9 +338,9 @@ export function getInitialSeedData(): DBState {
         email: 'arvind.mehra@apexinfratech.com',
         corporateId: 'APX-9001',
         password: 'Password@123',
-        role: 'group_admin',
+        role: 'group_admin_management',
         roleTitle: 'Group Executive VP & Compliance Officer',
-        organization: 'Apex Infrastructure Group'
+        organization: 'Apex Infrastructure Group Limited'
       },
       {
         id: 'u-6-alias',
@@ -337,18 +348,17 @@ export function getInitialSeedData(): DBState {
         email: 'priya.nair@apexinfratech.com',
         corporateId: 'APX-001',
         password: 'Password@123',
-        role: 'management',
+        role: 'group_admin_management',
         roleTitle: 'Board Member & ESG Committee Chair',
-        organization: 'Apex Infrastructure Group'
+        organization: 'Apex Infrastructure Group Limited'
       }
     ],
     roles: [
-      { id: 'project_user', name: 'Project User', description: 'Enter project ESG data, upload evidence, submit data' },
-      { id: 'bu_manager', name: 'BU Manager', description: 'Review project submissions, request correction, approve unit data' },
-      { id: 'subsidiary_admin', name: 'Subsidiary Admin', description: 'Monitor subsidiary, consolidate and review BU rollups' },
-      { id: 'esg_team', name: 'ESG/Sustainability Team', description: 'Validate ESG data, manage BRSR, reporting and SDG mapping' },
-      { id: 'group_admin', name: 'Group Admin', description: 'Enterprise-wide management, users, consolidation and final signoff' },
-      { id: 'management', name: 'Management', description: 'Executive analytics, board briefings, and authorized final reports' }
+      { id: 'project_user', name: 'Project Manager', description: 'Collect and submit project-level ESG data' },
+      { id: 'bu_manager', name: 'Business Unit Manager', description: 'Review and approve project ESG submissions' },
+      { id: 'subsidiary_admin', name: 'Subsidiary Admin', description: 'Monitor and consolidate subsidiary-level information' },
+      { id: 'esg_team', name: 'ESG / Sustainability Team', description: 'Validate ESG data, manage BRSR, SDG mapping, analytics and reporting' },
+      { id: 'group_admin_management', name: 'Group Admin & Management', description: 'Organization-wide administration, executive ESG oversight, and final authorization' }
     ],
     reporting_periods: [
       { id: 'fy-2025-26', code: 'FY 2025-26', startDate: '2025-04-01', endDate: '2026-03-31', isActive: true },
@@ -619,7 +629,7 @@ export function getInitialSeedData(): DBState {
           { level: 'bu', label: '2. BU Manager Review', role: 'bu_manager', status: 'approved', actionBy: 'Sunita Rao', actionAt: '2026-03-26 14:15', comments: 'Verified against BU generation logs.' },
           { level: 'subsidiary', label: '3. Subsidiary Admin Signoff', role: 'subsidiary_admin', status: 'approved', actionBy: 'Vikramaditya Patel', actionAt: '2026-03-27 16:45', comments: 'Subsidiary aggregation confirmed.' },
           { level: 'esg_team', label: '4. ESG Team Validation', role: 'esg_team', status: 'in_progress', comments: 'Reviewing CEA grid factor updates.' },
-          { level: 'final_approver', label: '5. Authorized Final Approver', role: 'group_admin', status: 'pending' }
+          { level: 'final_approver', label: '5. Group Admin & Management Signoff', role: 'group_admin_management', status: 'pending' }
         ],
         evidenceCount: 8,
         summaryHighlights: 'Scope 1 direct emissions down 8.3%; Renewable energy captive share reached 46.8%.'
@@ -640,7 +650,7 @@ export function getInitialSeedData(): DBState {
           { level: 'bu', label: '2. BU Manager Review', role: 'bu_manager', status: 'rejected', actionBy: 'Devendra Joshi', actionAt: '2026-03-25 09:30', comments: 'Correction required: Clarify contractor labor turnover increase.' },
           { level: 'subsidiary', label: '3. Subsidiary Admin Signoff', role: 'subsidiary_admin', status: 'pending' },
           { level: 'esg_team', label: '4. ESG Team Validation', role: 'esg_team', status: 'pending' },
-          { level: 'final_approver', label: '5. Authorized Final Approver', role: 'group_admin', status: 'pending' }
+          { level: 'final_approver', label: '5. Group Admin & Management Signoff', role: 'group_admin_management', status: 'pending' }
         ],
         evidenceCount: 4,
         summaryHighlights: 'Training hours logged at 34 hrs/worker, but contractor workforce turnover clarification needed.'
@@ -774,6 +784,29 @@ class DatabaseManager {
         // Synchronize users and roles from code definition to guarantee latest schema and credentials
         parsed.users = seed.users;
         parsed.roles = seed.roles;
+
+        // Auto-migration: migrate any existing users or steps having role 'group_admin' or 'management'
+        if (Array.isArray(parsed.users)) {
+          parsed.users.forEach((u: any) => {
+            if (u.role === 'group_admin' || u.role === 'management') {
+              u.role = 'group_admin_management';
+              u.roleTitle = 'Group Admin & Executive Director';
+            }
+          });
+        }
+        if (Array.isArray(parsed.approval_workflows)) {
+          parsed.approval_workflows.forEach((wf: any) => {
+            if (Array.isArray(wf.steps)) {
+              wf.steps.forEach((s: any) => {
+                if (s.role === 'group_admin' || s.role === 'management' || s.role === 'group_admin_management') {
+                  s.role = 'group_admin_management';
+                  s.label = '5. Group Admin & Management Signoff';
+                }
+              });
+            }
+          });
+        }
+        this.save(parsed);
         return parsed;
       }
     } catch (e) {

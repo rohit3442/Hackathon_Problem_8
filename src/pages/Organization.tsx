@@ -22,12 +22,23 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { Modal } from '../components/common/Modal';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import { useQuery } from '@tanstack/react-query';
+import { organizationApi } from '../api';
 import { MOCK_SUBSIDIARIES, MOCK_BUSINESS_UNITS, MOCK_PROJECTS } from '../services/mockData';
 
 export const Organization: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addToast } = useApp();
+
+  const { data: orgData } = useQuery({
+    queryKey: ['organization'],
+    queryFn: organizationApi.getOrganization,
+  });
+
+  const subsidiaries = (orgData?.subsidiaries && orgData.subsidiaries.length > 0) ? orgData.subsidiaries : MOCK_SUBSIDIARIES;
+  const businessUnits = (orgData?.businessUnits && orgData.businessUnits.length > 0) ? orgData.businessUnits : MOCK_BUSINESS_UNITS;
+  const projects = (orgData?.projects && orgData.projects.length > 0) ? orgData.projects : MOCK_PROJECTS;
 
   const [expandedSubs, setExpandedSubs] = useState<Record<string, boolean>>({
     'sub-1': true,
@@ -49,11 +60,11 @@ export const Organization: React.FC = () => {
     type: 'group',
     id: 'grp-1',
     data: {
-      name: 'Apex Infrastructure Group Limited',
-      cin: 'L99999MH2002PLC138924',
-      subsidiariesCount: MOCK_SUBSIDIARIES.length,
-      totalProjects: MOCK_PROJECTS.length,
-      headquarters: 'Bandra-Kurla Complex, Mumbai, Maharashtra',
+      name: orgData?.organization?.name || 'Apex Infrastructure Group Limited',
+      cin: orgData?.organization?.cin || 'L99999MH2002PLC138924',
+      subsidiariesCount: subsidiaries.length,
+      totalProjects: projects.length,
+      headquarters: orgData?.organization?.registeredOffice || 'Bandra-Kurla Complex, Mumbai, Maharashtra',
       esgScore: 92.4,
       brsrScore: 87.0,
       leadOfficer: 'Arvind Mehra (Group Executive VP)'
@@ -121,9 +132,9 @@ export const Organization: React.FC = () => {
               data: {
                 name: 'Apex Infrastructure Group Limited',
                 cin: 'L99999MH2002PLC138924',
-                subsidiariesCount: MOCK_SUBSIDIARIES.length,
-                totalProjects: MOCK_PROJECTS.length,
-                headquarters: 'Bandra-Kurla Complex, Mumbai, Maharashtra',
+                subsidiariesCount: subsidiaries.length,
+                totalProjects: projects.length,
+                headquarters: orgData?.organization?.registeredOffice || 'Bandra-Kurla Complex, Mumbai, Maharashtra',
                 esgScore: 92.4,
                 brsrScore: 87.0,
                 leadOfficer: 'Arvind Mehra (Group Executive VP)'
@@ -156,17 +167,17 @@ export const Organization: React.FC = () => {
               </div>
               <div className="text-right">
                 <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">92.4% ESG</span>
-                <span className="text-[10px] text-slate-400 block">{MOCK_SUBSIDIARIES.length} Subsidiaries</span>
+                <span className="text-[10px] text-slate-400 block">{subsidiaries.length} Subsidiaries</span>
               </div>
             </div>
           </div>
 
           {/* Subsidiaries List */}
           <div className="pl-4 sm:pl-6 space-y-3 border-l-2 border-slate-200 dark:border-slate-800 ml-5">
-            {MOCK_SUBSIDIARIES.map(sub => {
+            {subsidiaries.map(sub => {
               const isExpanded = expandedSubs[sub.id];
               const isSelected = selectedNode.id === sub.id;
-              const subBUs = MOCK_BUSINESS_UNITS.filter(bu => bu.subsidiaryId === sub.id);
+              const subBUs = businessUnits.filter(bu => bu.subsidiaryId === sub.id);
 
               return (
                 <div key={sub.id} className="space-y-2">
@@ -218,7 +229,7 @@ export const Organization: React.FC = () => {
                       {subBUs.map(bu => {
                         const isBuExpanded = expandedBUs[bu.id];
                         const isBuSelected = selectedNode.id === bu.id;
-                        const buProjects = MOCK_PROJECTS.filter(p => p.businessUnitId === bu.id);
+                        const buProjects = projects.filter(p => p.businessUnitId === bu.id);
 
                         return (
                           <div key={bu.id} className="space-y-2">

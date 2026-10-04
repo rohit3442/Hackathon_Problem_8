@@ -3,8 +3,14 @@ import { User } from '../types';
 
 export const usersApi = {
   getUsers: async (): Promise<User[]> => {
-    const res = await apiClient.get<User[]>('/users');
-    return res.data;
+    try {
+      const res = await apiClient.get<User[]>('/users');
+      if (Array.isArray(res.data)) return res.data;
+      return [];
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      return [];
+    }
   },
 
   createUser: async (user: Partial<User>): Promise<User> => {

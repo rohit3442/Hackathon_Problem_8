@@ -1,13 +1,21 @@
 import express from 'express';
 import cors from 'cors';
-import { db } from './db';
-import { evaluateAnomaly } from './anomalyEngine';
+import { db } from './db.ts';
+import { evaluateAnomaly } from './anomalyEngine.ts';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Rewrite /api/* to /api/v1/* if version prefix is omitted
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api/') && !req.url.startsWith('/api/v1/')) {
+    req.url = req.url.replace('/api/', '/api/v1/');
+  }
+  next();
+});
 
 // Request logging middleware
 app.use((req, res, next) => {
@@ -39,18 +47,20 @@ app.post('/api/v1/auth/login', (req, res) => {
     });
   }
 
+  const normalizedRequestedRole = (role === 'group_admin' || role === 'management') ? 'group_admin_management' : role;
+  const userRole = (user.role === 'group_admin' || user.role === 'management') ? 'group_admin_management' : user.role;
+
   // Strict Role Verification: User's assigned role must match the selected login role
-  if (role && user.role !== role) {
+  if (normalizedRequestedRole && userRole !== normalizedRequestedRole) {
     const roleLabels: Record<string, string> = {
-      project_user: 'Project User',
-      bu_manager: 'Project Manager / BU Manager',
+      project_user: 'Project Manager',
+      bu_manager: 'Business Unit Manager',
       subsidiary_admin: 'Subsidiary Admin',
-      esg_team: 'ESG Team',
-      group_admin: 'Group Admin',
-      management: 'Management'
+      esg_team: 'ESG / Sustainability Team',
+      group_admin_management: 'Group Admin & Management'
     };
-    const userRoleLabel = roleLabels[user.role] || user.role;
-    const requestedRoleLabel = roleLabels[role] || role;
+    const userRoleLabel = roleLabels[userRole] || userRole;
+    const requestedRoleLabel = roleLabels[normalizedRequestedRole] || normalizedRequestedRole;
 
     return res.status(403).json({
       error: `Access Denied: Account '${inputId}' is registered as [${userRoleLabel}] and is NOT authorized to access the [${requestedRoleLabel}] role.`
@@ -353,6 +363,28 @@ app.post('/api/v1/esg/governance', (req, res) => {
   db.insert('governance_data', record);
   db.logAudit(body.userName || 'Project User', 'Project Lead', 'Updated', 'Governance Data', record.id, `Updated Policy Disclosures`);
   res.status(201).json(record);
+});
+
+app.get('/api/v1/esg/metrics', (req, res) => {
+  const { category, projectCode } = req.query;
+  let metrics = db.getTable('esg_metrics') || [];
+  if (category) {
+    metrics = metrics.filter((m: any) => m.category === category);
+  }
+  if (projectCode) {
+    metrics = metrics.filter((m: any) => m.projectCode === projectCode);
+  }
+  res.json(metrics);
+});
+
+app.put('/api/v1/esg/metrics/:id', (req, res) => {
+  const updated = db.update('esg_metrics', req.params.id, req.body);
+  if (!updated) {
+    db.insert('esg_metrics', { id: req.params.id, ...req.body });
+    return res.json({ id: req.params.id, ...req.body });
+  }
+  db.logAudit('Project User', 'Project Lead', 'Updated', 'ESG Metric', req.params.id, `Status updated to ${req.body.status || 'updated'}`);
+  res.json(updated);
 });
 
 // ==========================================
@@ -663,6 +695,12 @@ app.post('/api/v1/users', (req, res) => {
   res.status(201).json(newUser);
 });
 
-app.listen(PORT, () => {
-  console.log(`[ECO METRICS BACKEND] API server listening on http://localhost:${PORT}`);
-});
+export { app };
+export default app;
+
+if (process.env.STANDALONE_SERVER === 'true') {
+  app.listen(PORT, () => {
+    console.log(`[ECO METRICS BACKEND] API server listening on http://localhost:${PORT}`);
+  });
+}
+

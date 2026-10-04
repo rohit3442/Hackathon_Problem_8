@@ -73,7 +73,7 @@ export const AIAnomalies: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {anomalies.map((item) => (
+              {(Array.isArray(anomalies) ? anomalies : []).map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                   <td className="p-3 font-bold text-slate-900 dark:text-slate-100">
                     {item.metric}

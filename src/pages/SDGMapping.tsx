@@ -13,6 +13,8 @@ import { ProgressBar } from '../components/common/ProgressBar';
 import { Drawer } from '../components/common/Drawer';
 import { Modal } from '../components/common/Modal';
 import { useApp } from '../context/AppContext';
+import { useQuery } from '@tanstack/react-query';
+import { sdgApi } from '../api';
 import { MOCK_SDGS } from '../services/mockData';
 import { SDGItem } from '../types';
 
@@ -20,6 +22,13 @@ export const SDGMapping: React.FC = () => {
   const { reportingYear, addToast } = useApp();
   const [selectedSDG, setSelectedSDG] = useState<SDGItem | null>(null);
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+
+  const { data: sdgData } = useQuery({
+    queryKey: ['sdgs'],
+    queryFn: sdgApi.getSDGs,
+  });
+
+  const sdgGoals = (sdgData?.goals && sdgData.goals.length > 0) ? (sdgData.goals as any) : MOCK_SDGS;
 
   return (
     <div className="space-y-6">
@@ -51,7 +60,7 @@ export const SDGMapping: React.FC = () => {
 
       {/* 17 SDG Interactive Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-        {MOCK_SDGS.map(sdg => (
+        {sdgGoals.map((sdg: any) => (
           <div
             key={sdg.number}
             onClick={() => setSelectedSDG(sdg)}

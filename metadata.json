@@ -1,0 +1,8 @@
+{
+  "name": "Eco Metrics - ESG & BRSR Reporting Platform",
+  "description": "Enterprise ESG & BRSR Reporting Platform for centralized collection, validation, consolidation, analytics and reporting.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

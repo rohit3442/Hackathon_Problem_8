@@ -37,7 +37,7 @@ export const BusinessUnits: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {businessUnits.map((bu) => (
+        {(Array.isArray(businessUnits) ? businessUnits : []).map((bu) => (
           <Card key={bu.id} className="p-5 flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="space-y-3">
               <div className="flex items-center justify-between">

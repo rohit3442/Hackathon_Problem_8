@@ -59,14 +59,15 @@ export const ProjectUserDashboard: React.FC = () => {
   });
 
   // Assigned facilities for Project User
-  const myProjects = projects.slice(0, 3);
+  const projectList = Array.isArray(projects) ? projects : [];
+  const myProjects = projectList.slice(0, 3);
   const avgCompletion = myProjects.length > 0 
     ? Math.round(myProjects.reduce((acc, p) => acc + (p.esgCompletion || 0), 0) / myProjects.length)
     : 0;
 
   const draftsCount = myProjects.filter(p => p.approvalStatus === 'draft').length;
   const pendingSubmissions = myProjects.filter(p => p.approvalStatus === 'submitted' || p.approvalStatus === 'under_review').length;
-  const correctionRequests = validations.filter(v => v.severity === 'high' && v.status === 'open').length;
+  const correctionRequests = Array.isArray(validations) ? validations.filter(v => v.severity === 'high' && v.status === 'open').length : 0;
 
   // Monthly telemetry data for project site (PRJ-001 / SMP-500)
   const telemetryMonthly = [

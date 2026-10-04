@@ -162,7 +162,7 @@ export const AuditTrail: React.FC = () => {
 
       {/* Audit Log Table */}
       <DataTable
-        data={logs}
+        data={Array.isArray(logs) ? logs : []}
         columns={columns}
         keyExtractor={(l) => l.id}
         searchPlaceholder="Search user, action, entity or metric..."

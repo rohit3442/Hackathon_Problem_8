@@ -3,8 +3,7 @@ export type UserRole =
   | 'bu_manager'
   | 'subsidiary_admin'
   | 'esg_team'
-  | 'group_admin'
-  | 'management';
+  | 'group_admin_management';
 
 export interface UserProfile {
   id: string;
@@ -53,7 +52,7 @@ export interface ValidationAlert {
 
 export interface ApprovalStep {
   id?: string;
-  level?: 'project' | 'bu' | 'subsidiary' | 'esg_team' | 'group_admin' | 'final' | string;
+  level?: 'project' | 'bu' | 'subsidiary' | 'esg_team' | 'group_admin_management' | 'final' | string;
   label: string;
   roleKey?: string;
   assignedRole?: UserRole | string;
@@ -137,15 +136,23 @@ export type Subsidiary = SubsidiaryEntity;
 export type BusinessUnit = BusinessUnitEntity;
 
 export interface BRSRPrinciple {
-  id: string;
+  id?: string;
   number: number;
-  code: string;
-  title: string;
-  subtitle: string;
-  essentialCompletion: number;
-  leadershipCompletion: number;
-  totalCompletion: number;
-  indicatorsCount: number;
+  code?: string;
+  title?: string;
+  subtitle?: string;
+  name?: string;
+  shortName?: string;
+  description?: string;
+  essentialCompletion?: number;
+  leadershipCompletion?: number;
+  totalCompletion?: number;
+  indicatorsCount?: number;
+  essentialCount?: number;
+  leadershipCount?: number;
+  essentialCompleted?: number;
+  leadershipCompleted?: number;
+  status?: string;
 }
 
 export interface ESGMetricItem {

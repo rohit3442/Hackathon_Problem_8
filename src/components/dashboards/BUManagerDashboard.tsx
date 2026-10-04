@@ -44,10 +44,14 @@ export const BUManagerDashboard: React.FC = () => {
   });
 
   // BU specific filters (e.g. Renewables & Power BU)
-  const buProjects = projects.filter(p => p.businessUnitId === 'bu-1' || p.businessUnitName?.includes('Renewables') || true);
-  const pendingReviews = workflows.filter(w => w.overallStatus === 'submitted' || w.overallStatus === 'under_review');
-  const correctionProjects = projects.filter(p => p.approvalStatus === 'correction_required' || p.validationStatus === 'flagged');
-  const openValidationAlerts = validations.filter(v => v.status === 'open');
+  const projectList = Array.isArray(projects) ? projects : [];
+  const workflowList = Array.isArray(workflows) ? workflows : [];
+  const validationList = Array.isArray(validations) ? validations : [];
+
+  const buProjects = projectList.filter(p => p.businessUnitId === 'bu-1' || p.businessUnitName?.includes('Renewables') || true);
+  const pendingReviews = workflowList.filter(w => w.overallStatus === 'submitted' || w.overallStatus === 'under_review');
+  const correctionProjects = projectList.filter(p => p.approvalStatus === 'correction_required' || p.validationStatus === 'flagged');
+  const openValidationAlerts = validationList.filter(v => v.status === 'open');
 
   const avgCompletion = buProjects.length > 0 
     ? Math.round(buProjects.reduce((acc, p) => acc + (p.esgCompletion || 0), 0) / buProjects.length)

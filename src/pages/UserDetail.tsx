@@ -15,13 +15,14 @@ export const UserDetail: React.FC = () => {
     queryFn: usersApi.getUsers,
   });
 
-  const selectedUser = users.find(u => u.id === id) || {
+  const userList = Array.isArray(users) ? users : [];
+  const selectedUser = userList.find(u => u.id === id) || {
     id,
     name: 'Rajesh Verma',
-    email: 'rajesh.verma@apexgroup.com',
+    email: 'rajesh.verma@meil.in',
     role: 'project_user',
     roleTitle: 'Project Lead & Facility Engineer',
-    organization: 'Apex Infrastructure Group',
+    organization: 'Apex Infrastructure Group Limited',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150'
   };
 

@@ -41,9 +41,12 @@ export const SubsidiaryAdminDashboard: React.FC = () => {
   const businessUnits = orgData?.businessUnits || [];
   const subsidiary = orgData?.subsidiaries?.[0] || { name: 'Apex Heavy Engineering & Construction', code: 'AHEC' };
 
-  const pendingSubReviews = workflows.filter(w => w.overallStatus === 'submitted' || w.overallStatus === 'under_review');
-  const avgCompletion = projects.length > 0 
-    ? Math.round(projects.reduce((acc, p) => acc + (p.esgCompletion || 0), 0) / projects.length)
+  const projectList = Array.isArray(projects) ? projects : [];
+  const workflowList = Array.isArray(workflows) ? workflows : [];
+
+  const pendingSubReviews = workflowList.filter(w => w.overallStatus === 'submitted' || w.overallStatus === 'under_review');
+  const avgCompletion = projectList.length > 0 
+    ? Math.round(projectList.reduce((acc, p) => acc + (p.esgCompletion || 0), 0) / projectList.length)
     : 0;
 
   return (

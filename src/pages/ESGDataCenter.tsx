@@ -22,7 +22,8 @@ import { ProgressBar } from '../components/common/ProgressBar';
 import { Modal } from '../components/common/Modal';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
-import { esgApi } from '../services/api';
+import { useQuery } from '@tanstack/react-query';
+import { esgApi, projectsApi } from '../api';
 import { ESGMetricItem } from '../types';
 import { MOCK_PROJECTS } from '../services/mockData';
 
@@ -30,6 +31,13 @@ export const ESGDataCenter: React.FC = () => {
   const navigate = useNavigate();
   const { user, canEditData } = useAuth();
   const { reportingYear, addToast } = useApp();
+
+  const { data: projectList = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: projectsApi.getProjects,
+  });
+
+  const projects = Array.isArray(projectList) && projectList.length > 0 ? projectList : MOCK_PROJECTS;
 
   const [activeTab, setActiveTab] = useState<'environmental' | 'social' | 'governance'>('environmental');
   const [metrics, setMetrics] = useState<ESGMetricItem[]>([]);
@@ -40,15 +48,18 @@ export const ESGDataCenter: React.FC = () => {
 
   useEffect(() => {
     esgApi.getESGMetrics(activeTab).then(data => {
-      setMetrics(data);
+      setMetrics(Array.isArray(data) ? data : []);
     });
   }, [activeTab]);
 
-  const filteredMetrics = metrics.filter(m => 
-    m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.subCategory.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredMetrics = metrics.filter(m => {
+    const q = (searchQuery || '').toLowerCase();
+    return (
+      (m.name || '').toLowerCase().includes(q) ||
+      (m.code || '').toLowerCase().includes(q) ||
+      (m.subCategory || '').toLowerCase().includes(q)
+    );
+  });
 
   const handleSaveDraft = (metric: ESGMetricItem) => {
     addToast('Draft Saved', `Saved updates for ${metric.name}`, 'info');
@@ -93,7 +104,7 @@ export const ESGDataCenter: React.FC = () => {
               onChange={(e) => setSelectedProject(e.target.value)}
               className="bg-transparent font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
             >
-              {MOCK_PROJECTS.map(p => (
+              {projects.map(p => (
                 <option key={p.code} value={p.code} className="bg-white dark:bg-[#0f1714]">
                   {p.code} - {p.name.split(' ')[0]} {p.name.split(' ')[1] || ''}
                 </option>

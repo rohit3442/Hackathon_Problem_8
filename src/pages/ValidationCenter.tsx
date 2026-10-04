@@ -42,15 +42,17 @@ export const ValidationCenter: React.FC = () => {
     }
   });
 
-  const filteredAlerts = alerts.filter(a => {
+  const alertList = Array.isArray(alerts) ? alerts : [];
+
+  const filteredAlerts = alertList.filter(a => {
     if (selectedSeverity !== 'all' && a.severity !== selectedSeverity) return false;
     if (selectedStatus !== 'all' && a.status !== selectedStatus) return false;
     return true;
   });
 
-  const highCount = alerts.filter(a => a.severity === 'high').length;
-  const mediumCount = alerts.filter(a => a.severity === 'medium').length;
-  const openCount = alerts.filter(a => a.status === 'open').length;
+  const highCount = alertList.filter(a => a.severity === 'high').length;
+  const mediumCount = alertList.filter(a => a.severity === 'medium').length;
+  const openCount = alertList.filter(a => a.status === 'open').length;
 
   return (
     <div className="space-y-6">
