@@ -159,13 +159,6 @@ export const SubsidiaryAdminDashboard: React.FC = () => {
                     >
                       Inspect BU
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate('/approvals')}
-                    >
-                      Reviews
-                    </Button>
                   </div>
                 </div>
               ))}

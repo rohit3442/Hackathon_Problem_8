@@ -11,3 +11,6 @@ export * from './reports';
 export * from './sdg';
 export * from './audit';
 export * from './users';
+export * from './documents';
+export * from './reviews';
+export * from './notifications';

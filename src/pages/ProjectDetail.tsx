@@ -12,6 +12,7 @@ import {
   Save, 
   Send, 
   AlertTriangle, 
+  AlertOctagon,
   Sparkles, 
   FileSpreadsheet, 
   ArrowLeft, 
@@ -22,7 +23,8 @@ import {
   ShieldCheck,
   ShieldAlert,
   History,
-  Download
+  Download,
+  Eye
 } from 'lucide-react';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -35,6 +37,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectsApi, esgApi, validationApi, approvalsApi } from '../api';
 import confetti from 'canvas-confetti';
 import { exportProjectDossierPDF } from '../utils/pdfExport';
+import { EvidenceManager } from '../components/evidence/EvidenceManager';
+import { AiValidationCenter } from '../components/validation/AiValidationCenter';
 
 export const ProjectDetail: React.FC = () => {
   const { id = 'proj-1' } = useParams<{ id: string }>();
@@ -68,18 +72,21 @@ export const ProjectDetail: React.FC = () => {
   // Review & Approval state for BU Manager
   const [reviewComments, setReviewComments] = useState('Audited against DISCOM power invoice batch #842 and flowmeter calibration reports. Approved.');
 
-  // Approval Mutation for BU Manager
+  // Approval Mutation for BU Manager & Subsidiary Admin
   const approvalActionMutation = useMutation({
     mutationFn: async ({ action, comments }: { action: 'approve' | 'request_correction'; comments: string }) => {
+      const dynamicWfId = project?.workflows?.[0]?.id || `wf-${(proj.code || id).toLowerCase()}-env` || id;
       await approvalsApi.actionApproval(
-        'wf-smp-500-env',
+        dynamicWfId,
         action,
         comments,
-        user?.name || (role === 'bu_manager' ? 'Vikram Malhotra' : 'Reviewer'),
-        user?.roleTitle || (role === 'bu_manager' ? 'BU Manager' : 'Approver')
+        user?.name || (role === 'bu_manager' ? 'Vikram Malhotra' : role === 'subsidiary_admin' ? 'Sunita Rao' : 'Approver'),
+        user?.roleTitle || (role === 'bu_manager' ? 'BU Manager' : role === 'subsidiary_admin' ? 'Subsidiary Admin' : 'Reviewer')
       );
       await projectsApi.updateProject(id, {
-        approvalStatus: action === 'approve' ? 'approved_bu' : 'correction_required',
+        approvalStatus: action === 'approve' 
+          ? (role === 'subsidiary_admin' ? 'under_esg_review' : 'under_subsidiary_review')
+          : 'correction_required',
       });
     },
     onSuccess: (_, variables) => {
@@ -91,9 +98,15 @@ export const ProjectDetail: React.FC = () => {
         try {
           confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
         } catch (e) {}
-        addToast('Submission Approved', 'Project Solar Apex approved by BU Manager and forwarded to ESG Team', 'success');
+        addToast(
+          role === 'subsidiary_admin' ? 'Subsidiary Signoff Completed' : 'Validated by BU Manager',
+          role === 'subsidiary_admin'
+            ? `${proj.name} signed off by Subsidiary Admin Sunita Rao and forwarded to ESG Team`
+            : `${proj.name} validated by BU Manager and forwarded to Subsidiary Admin Sunita Rao`,
+          'success'
+        );
       } else {
-        addToast('Correction Requested', 'Submission returned to Project User Rajesh Verma with feedback', 'info');
+        addToast('Correction Requested', `Submission returned to Project User (${proj.leadPerson || 'Rajesh Verma'}) with reviewer feedback`, 'info');
       }
     }
   });
@@ -114,7 +127,7 @@ export const ProjectDetail: React.FC = () => {
   const [hazardousWaste, setHazardousWaste] = useState<number>(12.5);
   const [nonHazardousWaste, setNonHazardousWaste] = useState<number>(145.0);
   const [remarks, setRemarks] = useState<string>('Routine operational disclosures backed by utility invoices.');
-  const [evidenceName, setEvidenceName] = useState<string>('DISCOM_Power_Invoices_FY26.pdf');
+  const [evidenceName] = useState<string>('DISCOM_Power_Invoices_FY26.pdf');
 
   // Social Form State
   const [employees, setEmployees] = useState<number>(1420);
@@ -149,7 +162,7 @@ export const ProjectDetail: React.FC = () => {
   // Save Draft Mutation
   const saveDraftMutation = useMutation({
     mutationFn: async () => {
-      return await esgApi.saveEnvironmental({
+      await esgApi.saveEnvironmental({
         projectId: id,
         electricityKwh: Number(electricity),
         fuelLitres: Number(fuel),
@@ -164,12 +177,15 @@ export const ProjectDetail: React.FC = () => {
         evidenceAttached: evidenceName,
         userName: user?.name || 'Rajesh Verma',
       });
+      await projectsApi.updateProject(id, {
+        approvalStatus: 'draft',
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project', id] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      addToast('Draft Saved', 'Environmental data recorded in database', 'success');
+      addToast('Draft Saved', 'Environmental data recorded in draft state (Pending Submission)', 'info');
     },
     onError: () => {
       addToast('Save Failed', 'Unable to save data to server', 'error');
@@ -211,10 +227,13 @@ export const ProjectDetail: React.FC = () => {
         status: 'submitted',
         remarks,
         evidenceAttached: evidenceName,
-        userName: user?.name || 'Rajesh Verma',
+        userName: user?.name || proj.leadPerson || 'Rajesh Verma',
       });
 
-      // 2. Update project status in DB
+      // 2. Submit to BU Manager in approval workflow
+      await esgApi.submitAllESG(id, user?.name || proj.leadPerson || 'Rajesh Verma', 'Environmental');
+
+      // 3. Update project status in DB
       await projectsApi.updateProject(id, {
         approvalStatus: 'submitted',
         esgCompletion: 100,
@@ -229,7 +248,7 @@ export const ProjectDetail: React.FC = () => {
       try {
         confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
       } catch (e) {}
-      addToast('Submission Complete', 'ESG Data submitted to BU Manager Vikram Malhotra for review', 'success');
+      addToast('Submitted to BU Manager', `Disclosures & telemetry for ${proj.name} submitted to BU Manager Vikram Malhotra for validation`, 'success');
       navigate(`/projects/${id}/submissions`);
     }
   });
@@ -251,6 +270,7 @@ export const ProjectDetail: React.FC = () => {
     businessUnitName: 'Renewables & Power Transmission',
     location: 'Bhadla, Jodhpur',
     state: 'Rajasthan',
+    leadPerson: 'Rajesh Verma',
     reportingYear: 'FY 2025-26',
     approvalStatus: 'draft',
     esgCompletion: 88,
@@ -264,10 +284,14 @@ export const ProjectDetail: React.FC = () => {
       { id: 'environmental', name: 'Environmental Data', path: `/projects/${id}/esg/environmental`, icon: Leaf },
       { id: 'social', name: 'Social Data', path: `/projects/${id}/esg/social`, icon: Users },
       { id: 'governance', name: 'Governance Data', path: `/projects/${id}/esg/governance`, icon: Scale },
-      { id: 'documents', name: 'Evidence Documents', path: `/projects/${id}/documents`, icon: Upload },
-      { id: 'validation', name: 'Validation & AI', path: `/projects/${id}/validation`, icon: Sparkles },
-      { id: 'review', name: 'Review & Approvals', path: `/projects/${id}/review`, icon: CheckCircle2, badge: proj.approvalStatus === 'submitted' ? 'Action Required' : undefined },
-      { id: 'brsr', name: 'BRSR Mapping', path: `/projects/${id}/brsr`, icon: FileSpreadsheet },
+      { id: 'documents', name: 'Evidence & Invoices', path: `/projects/${id}/documents`, icon: Upload },
+      { 
+        id: 'validation', 
+        name: 'Validation & AI', 
+        path: `/projects/${id}/validation`, 
+        icon: Sparkles,
+        badge: (electricity > 105000 || fatalities > 0 || waterRecycled > waterWithdrawal || !antiCorruption) ? 'Anomaly Flagged' : undefined 
+      },
       { id: 'submissions', name: 'Approval Pipeline', path: `/projects/${id}/submissions`, icon: CheckCircle },
     ];
   };
@@ -315,14 +339,6 @@ export const ProjectDetail: React.FC = () => {
             icon={<Leaf className="w-4 h-4" />}
           >
             Enter ESG Data
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => navigate(`/projects/${id}/brsr`)}
-            icon={<FileSpreadsheet className="w-4 h-4 text-emerald-600" />}
-          >
-            BRSR Linkage
           </Button>
 
           <Button
@@ -387,6 +403,127 @@ export const ProjectDetail: React.FC = () => {
       {/* TAB CONTENT 1: OVERVIEW */}
       {activeTab === 'overview' && (
         <div className="space-y-6">
+          {/* Real-Time Workflow Stage & Verification Banner */}
+          {proj.approvalStatus === 'submitted' ? (
+            <Card className="p-5 border-2 border-teal-500/50 bg-teal-50/20 dark:bg-teal-950/20 space-y-4 shadow-xs">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-teal-600 text-white uppercase tracking-wider">
+                      Stage 2: BU Manager Validation Required
+                    </span>
+                    <StatusBadge status="submitted" />
+                  </div>
+                  <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                    Disclosures Submitted by Project User ({proj.leadPerson || 'Rajesh Verma'})
+                  </h3>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                    Operational telemetry and evidence documents have been uploaded. BU Manager check and validation is required before forwarding to Subsidiary Admin Sunita Rao.
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-teal-200/60 dark:border-teal-800/60">
+                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  BU Manager Validation Remarks / Correction Feedback:
+                </label>
+                <textarea
+                  rows={2}
+                  value={reviewComments}
+                  onChange={(e) => setReviewComments(e.target.value)}
+                  placeholder="Enter validation audit notes or return feedback for the project user..."
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-sans"
+                />
+                <div className="flex flex-wrap items-center justify-end gap-2.5 pt-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      approvalActionMutation.mutate({
+                        action: 'request_correction',
+                        comments: reviewComments || 'Correction required on utility billing documentation.'
+                      });
+                    }}
+                    loading={approvalActionMutation.isPending}
+                    icon={<AlertTriangle className="w-3.5 h-3.5 text-amber-600" />}
+                  >
+                    Request Correction (Send Back to User)
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      approvalActionMutation.mutate({
+                        action: 'approve',
+                        comments: reviewComments || 'Validated by BU Manager. Audited against utility invoices and telemetry.'
+                      });
+                    }}
+                    loading={approvalActionMutation.isPending}
+                    icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    Validate & Sign Off for Subsidiary Admin
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          ) : proj.approvalStatus === 'under_subsidiary_review' ? (
+            <Card className="p-5 border-2 border-emerald-500/50 bg-emerald-50/20 dark:bg-emerald-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white uppercase tracking-wider">
+                    Stage 3: Subsidiary Admin Signoff
+                  </span>
+                  <StatusBadge status="under_subsidiary_review" />
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                  Validated by BU Manager Vikram Malhotra
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                  Disclosures have passed BU verification and AI anomaly checks. Ready for Subsidiary Admin Sunita Rao to sign off for ESG team consolidation.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  approvalActionMutation.mutate({
+                    action: 'approve',
+                    comments: 'Validated and signed off by Subsidiary Admin Sunita Rao for enterprise consolidation.'
+                  });
+                }}
+                loading={approvalActionMutation.isPending}
+                icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white flex-shrink-0"
+              >
+                Sign Off as Subsidiary Admin
+              </Button>
+            </Card>
+          ) : proj.approvalStatus === 'draft' ? (
+            <Card className="p-4 border border-amber-300 dark:border-amber-800/80 bg-amber-50/20 dark:bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <div>
+                  <span className="font-bold text-xs text-slate-900 dark:text-slate-100">
+                    Data Entry Pending (Project User: {proj.leadPerson || 'Rajesh Verma'})
+                  </span>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Upload electricity, fuel, water, and waste disclosures backed by utility invoices, then submit to BU Manager for verification.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate(`/projects/${id}/esg/environmental`)}
+                icon={<Leaf className="w-3.5 h-3.5" />}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs flex-shrink-0"
+              >
+                Enter Telemetry & Invoices
+              </Button>
+            </Card>
+          ) : null}
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="p-5 space-y-4">
               <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -753,6 +890,24 @@ export const ProjectDetail: React.FC = () => {
                 Validate & AI Check
               </Button>
               <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setElectricity(98500);
+                  setFuel(24200);
+                  setRenewablePct(46.5);
+                  setWaterWithdrawal(48500);
+                  setWaterConsumption(35000);
+                  setWaterRecycled(18200);
+                  setHazardousWaste(11.8);
+                  setNonHazardousWaste(138.0);
+                  addToast('Telemetry Populated', `Loaded baseline telemetry for ${proj.name}`, 'info');
+                }}
+                className="text-xs"
+              >
+                Prefill Sample Values
+              </Button>
+              <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => saveDraftMutation.mutate()}
@@ -767,11 +922,33 @@ export const ProjectDetail: React.FC = () => {
                 onClick={() => submitMutation.mutate()}
                 loading={submitMutation.isPending}
                 icon={<Send className="w-3.5 h-3.5" />}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                Submit Data
+                Submit to BU Manager
               </Button>
             </div>
           </div>
+
+          {/* Live AI Anomaly Warning Banner */}
+          {(electricity > 105000 || waterRecycled > waterWithdrawal || fuel > 28000) && (
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
+                <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <span>
+                  <strong>AI Telemetry Anomaly Detected:</strong> {electricity > 105000 ? `Electricity (${electricity.toLocaleString()} kWh) exceeds operational threshold limit (105,000 kWh).` : waterRecycled > waterWithdrawal ? `Recycled water (${waterRecycled.toLocaleString()} KL) exceeds total withdrawal.` : `Diesel fuel (${fuel.toLocaleString()} L) exceeds threshold limit.`}
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/projects/${id}/validation`)}
+                className="text-xs bg-amber-100/50 hover:bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200 border-amber-300 dark:border-amber-700"
+                icon={<Eye className="w-3.5 h-3.5" />}
+              >
+                Inspect in AI Engine
+              </Button>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Energy Section */}
@@ -960,19 +1137,7 @@ export const ProjectDetail: React.FC = () => {
                   </span>
                 </div>
 
-                {/* Evidence Attachment & Remarks */}
-                <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Supporting Evidence Document
-                  </label>
-                  <input
-                    type="text"
-                    value={evidenceName}
-                    onChange={(e) => setEvidenceName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-xs font-mono"
-                  />
-                </div>
-
+                {/* Remarks */}
                 <div>
                   <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Remarks & Methodological Notes
@@ -997,6 +1162,28 @@ export const ProjectDetail: React.FC = () => {
             title="Social Performance Form"
             subtitle="Workforce census, training, health & safety, grievances, and community engagement"
           />
+
+          {/* Fatalities Critical Alert */}
+          {fatalities > 0 && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-rose-900 dark:text-rose-200">
+                <AlertOctagon className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>
+                  <strong>CRITICAL AI STATUTORY ALERT:</strong> Workplace fatalities reported ({fatalities}). Zero-tolerance threshold breached! Immediate regulatory notice required.
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/projects/${id}/validation`)}
+                className="text-xs bg-rose-100/50 hover:bg-rose-100 text-rose-900 dark:bg-rose-950/60 dark:text-rose-200 border-rose-300 dark:border-rose-700"
+                icon={<Eye className="w-3.5 h-3.5" />}
+              >
+                Inspect in AI Engine
+              </Button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
               <label className="block font-semibold mb-1">Permanent Employees (Nos)</label>
@@ -1065,6 +1252,28 @@ export const ProjectDetail: React.FC = () => {
             title="Governance Disclosures Form"
             subtitle="Anti-corruption, ethics oversight, compliance incidents, and whistleblower resolutions"
           />
+
+          {/* Anti Corruption Inactive Alert */}
+          {!antiCorruption && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2 text-rose-900 dark:text-rose-200">
+                <AlertOctagon className="w-4 h-4 text-rose-600 flex-shrink-0" />
+                <span>
+                  <strong>GOVERNANCE COMPLIANCE BREACH:</strong> Anti-Corruption policy marked inactive. Mandatory SEBI BRSR Principle 1 failure.
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/projects/${id}/validation`)}
+                className="text-xs bg-rose-100/50 hover:bg-rose-100 text-rose-900 dark:bg-rose-950/60 dark:text-rose-200 border-rose-300 dark:border-rose-700"
+                icon={<Eye className="w-3.5 h-3.5" />}
+              >
+                Inspect in AI Engine
+              </Button>
+            </div>
+          )}
+
           <div className="space-y-3 text-xs">
             <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/60">
               <input
@@ -1110,82 +1319,64 @@ export const ProjectDetail: React.FC = () => {
         </Card>
       )}
 
-      {/* TAB CONTENT 5: DOCUMENTS */}
+      {/* TAB CONTENT 5: DOCUMENTS & INVOICES */}
       {activeTab === 'documents' && (
-        <Card className="p-5 space-y-4">
-          <CardHeader
-            title="Mandatory Evidence & Document Links"
-            subtitle="Verified files attached as audit proof for SEBI assurance"
-          />
-          <div className="space-y-3">
-            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-emerald-600" />
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-slate-100">DISCOM_Power_Invoices_FY26.pdf</p>
-                  <p className="text-[11px] text-slate-400">Electricity billing audit trail (12 monthly invoices)</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-1 rounded">
-                Verified
-              </span>
-            </div>
-
-            <div className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-3">
-                <FileText className="w-5 h-5 text-blue-600" />
-                <div>
-                  <p className="font-semibold text-slate-900 dark:text-slate-100">Water_STP_Calibration_Cert.pdf</p>
-                  <p className="text-[11px] text-slate-400">Flowmeter calibration certificate issued by NABL lab</p>
-                </div>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-2 py-1 rounded">
-                Verified
-              </span>
-            </div>
-          </div>
-        </Card>
+        <EvidenceManager
+          projectId={id}
+          projectCode={proj.code}
+          projectName={proj.name}
+        />
       )}
 
-      {/* TAB CONTENT 6: VALIDATION */}
+      {/* TAB CONTENT 6: VALIDATION & REAL-TIME AI ENGINE */}
       {activeTab === 'validation' && (
-        <Card className="p-5 space-y-4">
-          <CardHeader
-            title="Automated Rule & Anomaly Validation Results"
-            subtitle="Pre-submission compliance checks for Project Solar Apex"
-          />
-          <div className="space-y-3 text-xs">
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span className="font-semibold">Rule ENV-01: Recycled water ≤ Water withdrawal</span>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 uppercase">PASS</span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span className="font-semibold">Rule ENV-02: Renewable energy percentage between 0% and 100%</span>
-              </div>
-              <span className="text-[10px] font-bold text-emerald-700 uppercase">PASS</span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-amber-600" />
-                <span className="font-semibold">AI Statistical Anomaly: Electricity variance check</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRunAiValidation}
-              >
-                Inspect
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <AiValidationCenter
+          projectId={id}
+          projectCode={proj.code}
+          projectName={proj.name}
+          environmental={{
+            electricityKwh: electricity,
+            fuelLitres: fuel,
+            renewableEnergyPct: renewablePct,
+            waterWithdrawalKl: waterWithdrawal,
+            waterConsumptionKl: waterConsumption,
+            waterRecycledKl: waterRecycled,
+            hazardousWasteMt: hazardousWaste,
+            nonHazardousWasteMt: nonHazardousWaste,
+          }}
+          social={{
+            employees,
+            femalePct,
+            contractWorkers,
+            injuries,
+            fatalities,
+          }}
+          governance={{
+            antiCorruption,
+            whistleblowerCases,
+          }}
+          onUpdateMetric={(pillar, field, val) => {
+            if (pillar === 'environmental') {
+              if (field === 'electricityKwh') setElectricity(val);
+              else if (field === 'fuelLitres') setFuel(val);
+              else if (field === 'renewableEnergyPct') setRenewablePct(val);
+              else if (field === 'waterWithdrawalKl') setWaterWithdrawal(val);
+              else if (field === 'waterConsumptionKl') setWaterConsumption(val);
+              else if (field === 'waterRecycledKl') setWaterRecycled(val);
+              else if (field === 'hazardousWasteMt') setHazardousWaste(val);
+              else if (field === 'nonHazardousWasteMt') setNonHazardousWaste(val);
+            } else if (pillar === 'social') {
+              if (field === 'employees') setEmployees(val);
+              else if (field === 'femalePct') setFemalePct(val);
+              else if (field === 'contractWorkers') setContractWorkers(val);
+              else if (field === 'injuries') setInjuries(val);
+              else if (field === 'fatalities') setFatalities(val);
+            } else if (pillar === 'governance') {
+              if (field === 'antiCorruption') setAntiCorruption(val);
+              else if (field === 'whistleblowerCases') setWhistleblowerCases(val);
+            }
+          }}
+        />
       )}
 
       {/* TAB CONTENT 7: BRSR MAPPING */}

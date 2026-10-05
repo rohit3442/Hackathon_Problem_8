@@ -47,6 +47,7 @@ export const Projects: React.FC = () => {
   const [newState, setNewState] = useState('');
   const [newSubId, setNewSubId] = useState('sub-1');
   const [newBuId, setNewBuId] = useState('bu-1');
+  const [assignedUser, setAssignedUser] = useState('Rajesh Verma');
 
   // Load from backend API
   const { data: projects = [], isLoading: loadingProjects } = useQuery({
@@ -77,6 +78,9 @@ export const Projects: React.FC = () => {
         subsidiaryName: selectedSubObj?.name || 'Apex Heavy Engineering & Construction',
         businessUnitId: newBuId,
         businessUnitName: selectedBuObj?.name || 'Renewables & Power Transmission',
+        leadPerson: assignedUser,
+        approvalStatus: 'draft',
+        esgCompletion: 0,
       });
     },
     onSuccess: (newProj) => {
@@ -87,8 +91,9 @@ export const Projects: React.FC = () => {
       setNewName('');
       setNewLocation('');
       setNewState('');
-      addToast('Project Registered', `Created ${newProj.name} in database`, 'success');
-      navigate(`/projects/${newProj.id}/overview`);
+      addToast('Project Created & Uploaded to User', `Assigned to Project User (${assignedUser}). Opening Data Entry form...`, 'success');
+      // Directly upload/open to Project User data entry form instead of opening the table below
+      navigate(`/projects/${newProj.id}/esg/environmental`);
     }
   });
 
@@ -202,18 +207,6 @@ export const Projects: React.FC = () => {
               icon={<FileEdit className="w-3.5 h-3.5" />}
             >
               Enter ESG
-            </Button>
-          ) : role === 'esg_team' ? (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/projects/${row.id}/brsr`);
-              }}
-              icon={<FileSpreadsheet className="w-3.5 h-3.5" />}
-            >
-              BRSR Linkage
             </Button>
           ) : (
             <Button
@@ -358,8 +351,9 @@ export const Projects: React.FC = () => {
               size="sm"
               onClick={() => createMutation.mutate()}
               loading={createMutation.isPending}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
             >
-              Register Facility
+              Upload to Project User & Enter Data
             </Button>
           </>
         }
@@ -424,6 +418,24 @@ export const Projects: React.FC = () => {
               placeholder="e.g. Gujarat" 
               className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs" 
             />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block font-semibold mb-1">Assign to Project User (Data Contributor)</label>
+            <select 
+              value={assignedUser}
+              onChange={(e) => setAssignedUser(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
+            >
+              <option value="Rajesh Verma">Rajesh Verma (Site Project Lead - Renewable Assets)</option>
+              <option value="Amit Sharma">Amit Sharma (Site Engineer - Construction)</option>
+              <option value="Pooja Mehta">Pooja Mehta (EHS & Data Contributor)</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-[11px] text-emerald-900 dark:text-emerald-200 flex items-start gap-2.5">
+            <Sparkles className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <strong>Automated Multi-Tier Pipeline:</strong> On creation, this project will upload directly to the Project User workspace where he will enter/upload all data values and invoices, and send it back to the BU Manager for validation before subsidiary signoff.
+            </div>
           </div>
         </div>
       </Modal>

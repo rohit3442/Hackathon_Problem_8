@@ -236,10 +236,10 @@ export const MOCK_PROJECTS: ProjectEntity[] = [
     businessUnitName: 'Renewables & Power Transmission',
     location: 'Bhadla, Rajasthan',
     state: 'Rajasthan',
-    esgCompletion: 95,
-    brsrCompletion: 92,
+    esgCompletion: 75,
+    brsrCompletion: 70,
     validationStatus: 'clean',
-    approvalStatus: 'approved',
+    approvalStatus: 'draft',
     lastUpdated: '2026-03-28',
     leadPerson: 'Rajesh Verma'
   },

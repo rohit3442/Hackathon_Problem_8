@@ -22,6 +22,7 @@ export const Dashboard: React.FC = () => {
     case 'esg_team':
       return <ESGTeamDashboard />;
     case 'group_admin':
+    case 'group_admin_management':
       return <GroupAdminDashboard />;
     case 'management':
       return <ManagementDashboard />;

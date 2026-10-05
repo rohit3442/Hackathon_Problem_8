@@ -9,7 +9,8 @@ import {
   Building2, 
   ExternalLink,
   Lock,
-  Eye
+  Eye,
+  Send
 } from 'lucide-react';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -17,10 +18,13 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { ProgressBar } from '../components/common/ProgressBar';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import { useQueryClient } from '@tanstack/react-query';
+import { esgApi } from '../api';
 
 export const GovernanceHub: React.FC = () => {
-  const { canEditData } = useAuth();
-  const { addToast } = useApp();
+  const { user, canEditData } = useAuth();
+  const { reportingYear, addToast } = useApp();
+  const queryClient = useQueryClient();
 
   const policies = [
     {
@@ -83,14 +87,39 @@ export const GovernanceHub: React.FC = () => {
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => addToast('Governance Scorecard Exported', 'Downloaded SEBI Regulation 25 compliance report', 'success')}
-          icon={<FileText className="w-3.5 h-3.5" />}
-        >
-          Export Governance Brief
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => addToast('Governance Scorecard Exported', 'Downloaded SEBI Regulation 25 compliance report', 'success')}
+            icon={<FileText className="w-3.5 h-3.5" />}
+          >
+            Export Governance Brief
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={async () => {
+              await esgApi.saveGovernance({
+                projectId: 'proj-1',
+                reportingPeriod: reportingYear || 'FY 2025-26',
+                antiCorruptionPolicyActive: true,
+                operationsCoveredPct: 100,
+                whistleblowerCasesReceived: 3,
+                whistleblowerCasesResolved: 3,
+                status: 'submitted',
+                userName: user?.name || 'Project User'
+              });
+              queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+              queryClient.invalidateQueries({ queryKey: ['projects'] });
+              queryClient.invalidateQueries({ queryKey: ['approvals'] });
+              addToast('Submitted to BU Manager', 'Governance disclosures submitted to Vikram Malhotra', 'success');
+            }}
+            icon={<Send className="w-3.5 h-3.5" />}
+          >
+            Submit to BU Manager
+          </Button>
+        </div>
       </div>
 
       {/* Governance Scorecard & Stats */}

@@ -90,6 +90,44 @@
   ],
   "projects": [
     {
+      "id": "proj-1791196303961",
+      "code": "PRJ-901",
+      "name": "Khavda Hybrid Renewable 500MW",
+      "subsidiaryId": "sub-1",
+      "subsidiaryName": "Apex Heavy Engineering & Construction",
+      "businessUnitId": "bu-1",
+      "businessUnitName": "Renewables & Power Transmission",
+      "location": "Khavda",
+      "state": "Gujarat",
+      "esgCompletion": 100,
+      "brsrCompletion": 0,
+      "validationStatus": "clean",
+      "approvalStatus": "under_review",
+      "lastUpdated": "2026-10-05",
+      "leadPerson": "Rajesh Verma",
+      "reportingYear": "FY 2025-26",
+      "description": "Newly registered operational facility."
+    },
+    {
+      "id": "proj-1791195759842",
+      "code": "AWA-100",
+      "name": "Wind plant",
+      "subsidiaryId": "sub-2",
+      "subsidiaryName": "Apex Smart Infrastructure & Urban Mobility",
+      "businessUnitId": "bu-2",
+      "businessUnitName": "Hydrocarbon & Heavy EPC",
+      "location": "dholera",
+      "state": "GUjrat",
+      "esgCompletion": 10,
+      "brsrCompletion": 0,
+      "validationStatus": "clean",
+      "approvalStatus": "draft",
+      "lastUpdated": "2026-10-05",
+      "leadPerson": "Project Manager",
+      "reportingYear": "FY 2025-26",
+      "description": "Newly registered operational facility."
+    },
+    {
       "id": "proj-1",
       "code": "SMP-500",
       "name": "Solar Mega-Park 500MW Facility",
@@ -100,10 +138,10 @@
       "location": "Bhadla Solar Complex, Rajasthan",
       "state": "Rajasthan",
       "esgCompletion": 100,
-      "brsrCompletion": 92,
+      "brsrCompletion": 70,
       "validationStatus": "clean",
-      "approvalStatus": "submitted",
-      "lastUpdated": "2026-10-03",
+      "approvalStatus": "correction_required",
+      "lastUpdated": "2026-10-05",
       "leadPerson": "Rajesh Verma",
       "reportingYear": "FY 2025-26",
       "description": "500 MW utility scale solar photovoltaic power generation with captive battery energy storage system (BESS)."
@@ -118,11 +156,11 @@
       "businessUnitName": "Renewables & Power Transmission",
       "location": "Raigarh to Pugalur",
       "state": "Tamil Nadu",
-      "esgCompletion": 88,
+      "esgCompletion": 100,
       "brsrCompletion": 84,
       "validationStatus": "has_warnings",
-      "approvalStatus": "under_review",
-      "lastUpdated": "2026-03-26",
+      "approvalStatus": "submitted",
+      "lastUpdated": "2026-10-05",
       "leadPerson": "Amitabh Sanyal",
       "reportingYear": "FY 2025-26",
       "description": "±800 kV, 6,000 MW bi-pole HVDC link transporting clean power across inter-regional corridors."
@@ -137,11 +175,11 @@
       "businessUnitName": "Hydrocarbon & Heavy EPC",
       "location": "Hazira Industrial Zone",
       "state": "Gujarat",
-      "esgCompletion": 78,
+      "esgCompletion": 100,
       "brsrCompletion": 74,
-      "validationStatus": "has_warnings",
-      "approvalStatus": "correction_required",
-      "lastUpdated": "2026-03-25",
+      "validationStatus": "clean",
+      "approvalStatus": "submitted",
+      "lastUpdated": "2026-10-05",
       "leadPerson": "Manish Chawla",
       "reportingYear": "FY 2025-26",
       "description": "Alkaline & PEM multi-stack electrolyzer manufacturing and captive clean ammonia blending pilot."
@@ -237,14 +275,25 @@
       "avatar": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80"
     },
     {
+      "id": "u-demo-gam",
+      "name": "Group Admin & Management Officer",
+      "email": "group.admin@ecometrics.demo",
+      "corporateId": "EMP-GAM-001",
+      "password": "Password@123",
+      "role": "group_admin_management",
+      "roleTitle": "Group Admin & Executive Director",
+      "organization": "Apex Infrastructure Group Limited",
+      "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
+    },
+    {
       "id": "u-5",
       "name": "Rekha Nair",
       "email": "rekha.nair@meil.in",
       "corporateId": "EMP-GA-9001",
       "password": "Password@123",
-      "role": "group_admin",
+      "role": "group_admin_management",
       "roleTitle": "Group Executive VP & Compliance Officer",
-      "organization": "MEIL Group",
+      "organization": "Apex Infrastructure Group Limited",
       "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80"
     },
     {
@@ -253,9 +302,9 @@
       "email": "deepak.khaitan@meil.in",
       "corporateId": "EMP-EXEC-001",
       "password": "Password@123",
-      "role": "management",
+      "role": "group_admin_management",
       "roleTitle": "Managing Director & Board ESG Chair",
-      "organization": "MEIL Group",
+      "organization": "Apex Infrastructure Group Limited",
       "avatar": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=150&auto=format&fit=crop&q=80"
     },
     {
@@ -266,7 +315,7 @@
       "password": "Password@123",
       "role": "project_user",
       "roleTitle": "Project Sustainability Lead",
-      "organization": "Apex Infrastructure Group"
+      "organization": "Apex Infrastructure Group Limited"
     },
     {
       "id": "u-2-alias",
@@ -276,7 +325,7 @@
       "password": "Password@123",
       "role": "bu_manager",
       "roleTitle": "Business Unit General Manager",
-      "organization": "Apex Infrastructure Group"
+      "organization": "Apex Infrastructure Group Limited"
     },
     {
       "id": "u-4-alias",
@@ -286,7 +335,7 @@
       "password": "Password@123",
       "role": "esg_team",
       "roleTitle": "Chief Sustainability Officer",
-      "organization": "Apex Infrastructure Group"
+      "organization": "Apex Infrastructure Group Limited"
     },
     {
       "id": "u-5-alias",
@@ -294,9 +343,9 @@
       "email": "arvind.mehra@apexinfratech.com",
       "corporateId": "APX-9001",
       "password": "Password@123",
-      "role": "group_admin",
+      "role": "group_admin_management",
       "roleTitle": "Group Executive VP & Compliance Officer",
-      "organization": "Apex Infrastructure Group"
+      "organization": "Apex Infrastructure Group Limited"
     },
     {
       "id": "u-6-alias",
@@ -304,41 +353,36 @@
       "email": "priya.nair@apexinfratech.com",
       "corporateId": "APX-001",
       "password": "Password@123",
-      "role": "management",
+      "role": "group_admin_management",
       "roleTitle": "Board Member & ESG Committee Chair",
-      "organization": "Apex Infrastructure Group"
+      "organization": "Apex Infrastructure Group Limited"
     }
   ],
   "roles": [
     {
       "id": "project_user",
-      "name": "Project User",
-      "description": "Enter project ESG data, upload evidence, submit data"
+      "name": "Project Manager",
+      "description": "Collect and submit project-level ESG data"
     },
     {
       "id": "bu_manager",
-      "name": "BU Manager",
-      "description": "Review project submissions, request correction, approve unit data"
+      "name": "Business Unit Manager",
+      "description": "Review and approve project ESG submissions"
     },
     {
       "id": "subsidiary_admin",
       "name": "Subsidiary Admin",
-      "description": "Monitor subsidiary, consolidate and review BU rollups"
+      "description": "Monitor and consolidate subsidiary-level information"
     },
     {
       "id": "esg_team",
-      "name": "ESG/Sustainability Team",
-      "description": "Validate ESG data, manage BRSR, reporting and SDG mapping"
+      "name": "ESG / Sustainability Team",
+      "description": "Validate ESG data, manage BRSR, SDG mapping, analytics and reporting"
     },
     {
-      "id": "group_admin",
-      "name": "Group Admin",
-      "description": "Enterprise-wide management, users, consolidation and final signoff"
-    },
-    {
-      "id": "management",
-      "name": "Management",
-      "description": "Executive analytics, board briefings, and authorized final reports"
+      "id": "group_admin_management",
+      "name": "Group Admin & Management",
+      "description": "Organization-wide administration, executive ESG oversight, and final authorization"
     }
   ],
   "reporting_periods": [
@@ -395,44 +439,44 @@
       "electricityKwh": 18200000,
       "fuelLitres": 62000,
       "renewableEnergyPct": 32.5,
-      "totalEnergyGj": 68400,
+      "totalEnergyGj": 67876,
       "waterWithdrawalKl": 142000,
       "waterConsumptionKl": 72000,
       "waterRecycledKl": 70000,
-      "waterRecycledPct": 49.3,
+      "waterRecycledPct": 0,
       "hazardousWasteMt": 32,
       "nonHazardousWasteMt": 890,
-      "wasteRecycledPct": 88,
-      "scope1GhgTco2e": 8200,
-      "scope2GhgTco2e": 14500,
-      "scope3GhgTco2e": 36000,
-      "status": "under_review",
-      "evidenceAttached": "Transmission_Substation_Energy_Manifest.pdf",
-      "remarks": "Tower foundation works utilized low-carbon cement blends.",
-      "lastUpdated": "2026-03-26"
+      "wasteRecycledPct": 0,
+      "scope1GhgTco2e": 166,
+      "scope2GhgTco2e": 10074,
+      "scope3GhgTco2e": 0,
+      "status": "draft",
+      "evidenceAttached": "DISCOM_Power_Invoices_FY26.pdf",
+      "remarks": "Routine operational disclosures backed by utility invoices.",
+      "lastUpdated": "2026-10-05"
     },
     {
       "id": "env-3",
       "projectId": "proj-3",
       "reportingPeriod": "FY 2025-26",
-      "electricityKwh": 12400000,
+      "electricityKwh": 124000,
       "fuelLitres": 28000,
       "renewableEnergyPct": 55,
-      "totalEnergyGj": 48900,
-      "waterWithdrawalKl": 98000,
+      "totalEnergyGj": 1510.4,
+      "waterWithdrawalKl": 980,
       "waterConsumptionKl": 86000,
       "waterRecycledKl": 12000,
-      "waterRecycledPct": 12.2,
+      "waterRecycledPct": 0,
       "hazardousWasteMt": 14.5,
       "nonHazardousWasteMt": 340,
-      "wasteRecycledPct": 82,
-      "scope1GhgTco2e": 4100,
-      "scope2GhgTco2e": 7800,
-      "scope3GhgTco2e": 19500,
-      "status": "draft",
-      "evidenceAttached": "Electrolyzer_Testing_Water_Balance.pdf",
-      "remarks": "Demineralized water purification plant commissioned.",
-      "lastUpdated": "2026-03-25"
+      "wasteRecycledPct": 0,
+      "scope1GhgTco2e": 75,
+      "scope2GhgTco2e": 46,
+      "scope3GhgTco2e": 0,
+      "status": "submitted",
+      "evidenceAttached": "DISCOM_Power_Invoices_FY26.pdf",
+      "remarks": "Routine operational disclosures backed by utility invoices.",
+      "lastUpdated": "2026-10-05"
     }
   ],
   "social_data": [
@@ -745,6 +789,40 @@
   ],
   "validation_results": [
     {
+      "id": "val-ai-1791190163178",
+      "recordId": "ai-detection",
+      "metric": "Electricity Consumption",
+      "project": "Active Project",
+      "businessUnit": "Active Unit",
+      "subsidiary": "Active Subsidiary",
+      "category": "environmental",
+      "currentValue": "115000",
+      "previousValue": "84000",
+      "rule": "THRESHOLD-LIMIT",
+      "severity": "warning",
+      "status": "resolved",
+      "detectedAt": "2026-10-05 08:49",
+      "details": "Limit breach: Reported Electricity Consumption (115,000) exceeds maximum allowed operational threshold (105,000) by 36.9%.",
+      "justification": ""
+    },
+    {
+      "id": "val-ai-1791190142595",
+      "recordId": "ai-detection",
+      "metric": "Fatalities",
+      "project": "Active Project",
+      "businessUnit": "Active Unit",
+      "subsidiary": "Active Subsidiary",
+      "category": "social",
+      "currentValue": "1",
+      "previousValue": "0",
+      "rule": "SOC-FATAL-01",
+      "severity": "error",
+      "status": "open",
+      "detectedAt": "2026-10-05 08:49",
+      "details": "CRITICAL STATUTORY BREACH: 1 workplace fatality reported. Factories Act & SEBI mandate immediate senior management inquiry and zero-tolerance EHS root-cause audit.",
+      "justification": ""
+    },
+    {
       "id": "val-ai-1791037043832",
       "recordId": "ai-detection",
       "metric": "Electricity Consumption",
@@ -1002,16 +1080,16 @@
   ],
   "approval_workflows": [
     {
-      "id": "wf-smp-500-env",
-      "projectId": "proj-1",
-      "projectCode": "SMP-500",
-      "projectName": "Solar Mega-Park 500MW Facility",
+      "id": "wf-prj-901-env",
+      "projectId": "proj-1791196303961",
+      "projectCode": "PRJ-901",
+      "projectName": "Khavda Hybrid Renewable 500MW",
       "category": "Environmental",
       "reportingPeriod": "FY 2025-26",
-      "currentStepIndex": 4,
-      "overallStatus": "approved",
-      "submittedBy": "Rajesh Verma (Project Lead)",
-      "submittedAt": "2026-03-25 10:30",
+      "currentStepIndex": 2,
+      "overallStatus": "under_review",
+      "submittedBy": "Rajesh Verma",
+      "submittedAt": "2026-10-05 10:31",
       "steps": [
         {
           "level": "project",
@@ -1019,44 +1097,166 @@
           "role": "project_user",
           "status": "approved",
           "actionBy": "Rajesh Verma",
-          "actionAt": "2026-03-25 10:30",
-          "comments": "All meters and bills verified."
+          "actionAt": "2026-10-05 10:31",
+          "comments": "Operational ESG data entry and telemetry verified by Project Lead."
         },
         {
           "level": "bu",
           "label": "2. BU Manager Review",
           "role": "bu_manager",
           "status": "approved",
-          "actionBy": "Sunita Rao",
-          "actionAt": "2026-03-26 14:15",
-          "comments": "Verified against BU generation logs."
+          "actionBy": "Vikram Malhotra",
+          "actionAt": "2026-10-05 10:32",
+          "comments": "Telemetry audited and validated by BU Manager Vikram Malhotra. Forwarded to Subsidiary Admin."
         },
         {
           "level": "subsidiary",
           "label": "3. Subsidiary Admin Signoff",
           "role": "subsidiary_admin",
+          "status": "in_progress",
+          "actionBy": "Sunita Rao",
+          "actionAt": "",
+          "comments": ""
+        },
+        {
+          "level": "esg_team",
+          "label": "4. ESG Team Technical Validation",
+          "role": "esg_team",
+          "status": "pending",
+          "actionBy": "Dr. Ananya Sen",
+          "actionAt": "",
+          "comments": ""
+        },
+        {
+          "level": "management",
+          "label": "5. Group Admin & Management Signoff",
+          "role": "group_admin_management",
+          "status": "pending",
+          "actionBy": "Deepak Khaitan",
+          "actionAt": "",
+          "comments": ""
+        }
+      ],
+      "evidenceCount": 6,
+      "summaryHighlights": "Environmental data submitted to BU Manager for verification."
+    },
+    {
+      "id": "wf-hvdc-south-esg",
+      "projectId": "proj-2",
+      "projectCode": "HVDC-SOUTH",
+      "projectName": "High Voltage Direct Current Transmission Corridor",
+      "category": "ESG Consolidated",
+      "reportingPeriod": "FY 2025-26",
+      "currentStepIndex": 1,
+      "overallStatus": "submitted",
+      "submittedBy": "Rajesh Verma",
+      "submittedAt": "2026-10-05 09:05",
+      "steps": [
+        {
+          "level": "project",
+          "label": "1. Project Data Entry",
+          "role": "project_user",
           "status": "approved",
-          "actionBy": "Vikramaditya Patel",
-          "actionAt": "2026-03-27 16:45",
-          "comments": "Subsidiary aggregation confirmed."
+          "actionBy": "Rajesh Verma",
+          "actionAt": "2026-10-05 09:05",
+          "comments": "Operational ESG data entry and telemetry verified by Project Lead."
+        },
+        {
+          "level": "bu",
+          "label": "2. BU Manager Review",
+          "role": "bu_manager",
+          "status": "in_progress",
+          "actionBy": "Vikram Malhotra",
+          "actionAt": "",
+          "comments": ""
+        },
+        {
+          "level": "subsidiary",
+          "label": "3. Subsidiary Admin Signoff",
+          "role": "subsidiary_admin",
+          "status": "pending",
+          "actionBy": "Sunita Rao",
+          "actionAt": "",
+          "comments": ""
+        },
+        {
+          "level": "esg_team",
+          "label": "4. ESG Team Technical Validation",
+          "role": "esg_team",
+          "status": "pending",
+          "actionBy": "Dr. Ananya Sen",
+          "actionAt": "",
+          "comments": ""
+        },
+        {
+          "level": "management",
+          "label": "5. Group Admin & Management Signoff",
+          "role": "group_admin_management",
+          "status": "pending",
+          "actionBy": "Deepak Khaitan",
+          "actionAt": "",
+          "comments": ""
+        }
+      ],
+      "evidenceCount": 6,
+      "summaryHighlights": "ESG Consolidated data submitted to BU Manager for verification."
+    },
+    {
+      "id": "wf-smp-500-env",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "projectName": "Solar Mega-Park 500MW Facility",
+      "category": "Environmental",
+      "reportingPeriod": "FY 2025-26",
+      "currentStepIndex": 1,
+      "overallStatus": "correction_required",
+      "submittedBy": "Rajesh Verma",
+      "submittedAt": "2026-10-05 09:05",
+      "steps": [
+        {
+          "level": "project",
+          "label": "1. Project Data Entry",
+          "role": "project_user",
+          "status": "approved",
+          "actionBy": "Rajesh Verma",
+          "actionAt": "2026-10-05 09:05",
+          "comments": "ESG disclosures and verified telemetry submitted."
+        },
+        {
+          "level": "bu",
+          "label": "2. BU Manager Review",
+          "role": "bu_manager",
+          "status": "in_progress",
+          "actionBy": "Vikram Malhotra",
+          "actionAt": "",
+          "comments": ""
+        },
+        {
+          "level": "subsidiary",
+          "label": "3. Subsidiary Admin Signoff",
+          "role": "subsidiary_admin",
+          "status": "pending",
+          "actionBy": "Sunita Rao",
+          "actionAt": "",
+          "comments": ""
         },
         {
           "level": "esg_team",
           "label": "4. ESG Team Validation",
           "role": "esg_team",
-          "status": "approved",
-          "comments": "Unit engineering verification passed against substation meter telemetry.",
-          "actionBy": "Vikram Malhotra",
-          "actionAt": "2026-10-02 14:10"
+          "status": "pending",
+          "comments": "",
+          "actionBy": "Dr. Ananya Sen",
+          "actionAt": ""
         },
         {
           "level": "final_approver",
-          "label": "5. Authorized Final Approver",
-          "role": "group_admin",
-          "status": "approved",
+          "label": "5. Group Admin & Management Signoff",
+          "role": "group_admin_management",
+          "status": "pending",
           "actionBy": "Deepak Khaitan",
-          "actionAt": "2026-10-03 13:56",
-          "comments": "Board ESG Committee formal signoff executed."
+          "actionAt": "",
+          "comments": ""
         }
       ],
       "evidenceCount": 8,
@@ -1070,23 +1270,24 @@
       "category": "Social",
       "reportingPeriod": "FY 2025-26",
       "currentStepIndex": 1,
-      "overallStatus": "correction_required",
-      "submittedBy": "Manish Chawla (Project Lead)",
-      "submittedAt": "2026-03-24 12:10",
+      "overallStatus": "submitted",
+      "submittedBy": "Project User",
+      "submittedAt": "2026-10-05 09:05",
       "steps": [
         {
           "level": "project",
           "label": "1. Project Data Entry",
           "role": "project_user",
           "status": "approved",
-          "actionBy": "Manish Chawla",
-          "actionAt": "2026-03-24 12:10"
+          "actionBy": "Project User",
+          "actionAt": "2026-10-05 09:05",
+          "comments": "ESG disclosures and verified telemetry submitted."
         },
         {
           "level": "bu",
           "label": "2. BU Manager Review",
           "role": "bu_manager",
-          "status": "rejected",
+          "status": "in_progress",
           "actionBy": "Devendra Joshi",
           "actionAt": "2026-03-25 09:30",
           "comments": "Correction required: Clarify contractor labor turnover increase."
@@ -1105,8 +1306,8 @@
         },
         {
           "level": "final_approver",
-          "label": "5. Authorized Final Approver",
-          "role": "group_admin",
+          "label": "5. Group Admin & Management Signoff",
+          "role": "group_admin_management",
           "status": "pending"
         }
       ],
@@ -1118,22 +1319,148 @@
   "approval_actions": [],
   "documents": [
     {
-      "id": "doc-1",
-      "name": "Energy_Audit_Cert_ISO50001.pdf",
-      "projectId": "proj-1",
+      "id": "doc-1791189626246",
+      "projectId": "proj-2",
+      "projectCode": "HVDC-SOUTH",
+      "title": "L&T BRSR Report FY2025-26",
+      "fileName": "L&T BRSR Report FY2025-26.pdf",
+      "fileType": "pdf",
+      "fileSize": "336 KB",
+      "category": "environmental",
+      "subCategory": "Electricity Utility Invoice",
+      "description": "Uploaded verified environmental evidence and audit documentation for High Voltage Direct Current Transmission Corridor.",
       "uploadedBy": "Rajesh Verma",
-      "uploadedAt": "2026-03-25",
-      "size": "2.4 MB",
-      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      "uploadedAt": "2026-10-05 08:40",
+      "verified": true,
+      "sha256": "t93o2tab3gbs3jv8rcaumimrbb5nfye8"
+    },
+    {
+      "id": "doc-1791189520053",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "title": "Q4_Diesel_Generator_Log.xlsx",
+      "fileName": "Q4_Diesel_Generator_Log.xlsx",
+      "fileType": "excel",
+      "fileSize": "2.1 MB",
+      "category": "environmental",
+      "subCategory": "Fuel Invoices",
+      "description": "Substation backup diesel consumption log book verified against vendor delivery challans.",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-10-05 08:38",
+      "verified": true,
+      "sha256": "f4awszsgyhso9739sdfjth58ae58w7mr"
+    },
+    {
+      "id": "doc-1",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "title": "DISCOM_Power_Invoices_FY26.pdf",
+      "fileName": "DISCOM_Power_Invoices_FY26.pdf",
+      "fileType": "pdf",
+      "fileSize": "4.2 MB",
+      "category": "environmental",
+      "subCategory": "Electricity Invoices",
+      "description": "12 monthly grid electricity invoices from Jodhpur Vidyut Vitran Nigam with meter serial stamps.",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-03-24 14:20",
+      "verified": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     {
       "id": "doc-2",
-      "name": "GHG_Protocol_Assurance_Statement_DNV.pdf",
       "projectId": "proj-1",
-      "uploadedBy": "Dr. Ananya Sen",
-      "uploadedAt": "2026-03-27",
-      "size": "1.8 MB",
-      "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      "projectCode": "SMP-500",
+      "title": "Water_STP_Calibration_Cert.pdf",
+      "fileName": "Water_STP_Calibration_Cert.pdf",
+      "fileType": "pdf",
+      "fileSize": "1.8 MB",
+      "category": "environmental",
+      "subCategory": "Water Stewardship Calibration",
+      "description": "Electromagnetic flowmeter calibration certificate issued by NABL accredited lab (ISO 17025).",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-03-25 11:15",
+      "verified": true,
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    },
+    {
+      "id": "doc-3",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "title": "Solar_Inverter_Generation_Ledger_FY26.xlsx",
+      "fileName": "Solar_Inverter_Generation_Ledger_FY26.xlsx",
+      "fileType": "excel",
+      "fileSize": "6.8 MB",
+      "category": "environmental",
+      "subCategory": "Clean Energy SCADA Data",
+      "description": "Hourly generation spreadsheets and auxiliary consumption logs for 500MW solar string inverters.",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-03-26 09:45",
+      "verified": true,
+      "sha256": "ef2d127de37b942baad06145e54b0c619a1f22327b2ebbcfbec78f5564afe39d"
+    },
+    {
+      "id": "doc-4",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "title": "Contractor_Workforce_Safety_Census.xlsx",
+      "fileName": "Contractor_Workforce_Safety_Census.xlsx",
+      "fileType": "excel",
+      "fileSize": "3.1 MB",
+      "category": "social",
+      "subCategory": "Workforce & Safety",
+      "description": "Biometric attendance logs, gender ratio census, and EHS accident-free hours register for 4,200 workers.",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-03-27 16:30",
+      "verified": true,
+      "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+    },
+    {
+      "id": "doc-5",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "title": "POSH_Committee_Annual_Report_FY26.docx",
+      "fileName": "POSH_Committee_Annual_Report_FY26.docx",
+      "fileType": "word",
+      "fileSize": "850 KB",
+      "category": "social",
+      "subCategory": "POSH & Grievance Mechanism",
+      "description": "Annual report of Internal Complaints Committee under POSH Act with zero unresolved cases.",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-03-28 10:10",
+      "verified": true,
+      "sha256": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8"
+    },
+    {
+      "id": "doc-6",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "title": "Anti_Corruption_Code_Board_Resolution.pdf",
+      "fileName": "Anti_Corruption_Code_Board_Resolution.pdf",
+      "fileType": "pdf",
+      "fileSize": "1.2 MB",
+      "category": "governance",
+      "subCategory": "Ethics & Board Oversight",
+      "description": "Certified Board Resolution adopting 100% compliance with Anti-Bribery & Corruption code across sites.",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-03-28 15:40",
+      "verified": true,
+      "sha256": "4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a"
+    },
+    {
+      "id": "doc-7",
+      "projectId": "proj-1",
+      "projectCode": "SMP-500",
+      "title": "Whistleblower_Investigation_Log_FY26.docx",
+      "fileName": "Whistleblower_Investigation_Log_FY26.docx",
+      "fileType": "word",
+      "fileSize": "1.4 MB",
+      "category": "governance",
+      "subCategory": "Vigil Mechanism",
+      "description": "Vigil mechanism committee register detailing receipt, inquiry, and resolution of 3 whistleblower reports.",
+      "uploadedBy": "Rajesh Verma",
+      "uploadedAt": "2026-03-29 11:25",
+      "verified": true,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
   ],
   "sdg_goals": [
@@ -1353,6 +1680,314 @@
     }
   ],
   "audit_logs": [
+    {
+      "id": "aud-1791196327794-685",
+      "timestamp": "2026-10-05 10:32:07",
+      "userName": "Vikram Malhotra",
+      "userRole": "BU Manager",
+      "action": "Approved",
+      "entity": "Approval Workflow",
+      "entityId": "wf-prj-901-env",
+      "newValue": "Step approved: 2. BU Manager Review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791196318514-330",
+      "timestamp": "2026-10-05 10:31:58",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Approval Workflow",
+      "entityId": "wf-prj-901-env",
+      "newValue": "Submitted Khavda Hybrid Renewable 500MW for BU Manager review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791196303962-692",
+      "timestamp": "2026-10-05 10:31:43",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Created",
+      "entity": "Project Entity",
+      "entityId": "proj-1791196303961",
+      "newValue": "Created Khavda Hybrid Renewable 500MW",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791195759843-390",
+      "timestamp": "2026-10-05 10:22:39",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Created",
+      "entity": "Project Entity",
+      "entityId": "proj-1791195759842",
+      "newValue": "Created Wind plant",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791195703561-356",
+      "timestamp": "2026-10-05 10:21:43",
+      "userName": "Vikram Malhotra",
+      "userRole": "Project & Business Unit Manager",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-2",
+      "newValue": "User authenticated successfully with role bu_manager",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191702881-39",
+      "timestamp": "2026-10-05 09:15:02",
+      "userName": "Deepak Khaitan",
+      "userRole": "Managing Director & Board ESG Chair",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-6",
+      "newValue": "User authenticated successfully with role group_admin_management",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191607591-179",
+      "timestamp": "2026-10-05 09:13:27",
+      "userName": "Rekha Nair",
+      "userRole": "Group Executive VP & Compliance Officer",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-5",
+      "newValue": "User authenticated successfully with role group_admin_management",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191513118-79",
+      "timestamp": "2026-10-05 09:11:53",
+      "userName": "Auditor",
+      "userRole": "Reviewer",
+      "action": "Validated",
+      "entity": "Validation Flag",
+      "entityId": "val-ai-1791190163178",
+      "newValue": "Status updated to resolved",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191491009-200",
+      "timestamp": "2026-10-05 09:11:31",
+      "userName": "Dr. Ananya Sen",
+      "userRole": "Group Chief Sustainability Officer",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-4",
+      "newValue": "User authenticated successfully with role esg_team",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191382773-271",
+      "timestamp": "2026-10-05 09:09:42",
+      "userName": "Sunita Rao",
+      "userRole": "Subsidiary Director of ESG & EHS",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-3",
+      "newValue": "User authenticated successfully with role subsidiary_admin",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191333750-717",
+      "timestamp": "2026-10-05 09:08:53",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Updated",
+      "entity": "Project Entity",
+      "entityId": "proj-1",
+      "newValue": "Updated fields",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191333540-617",
+      "timestamp": "2026-10-05 09:08:53",
+      "userName": "Vikram Malhotra",
+      "userRole": "Project & Business Unit Manager",
+      "action": "Rejected",
+      "entity": "Approval Workflow",
+      "entityId": "wf-smp-500-env",
+      "newValue": "Correction requested: Audited against DISCOM power invoice batch #842 and flowmeter calibration reports. Approved.",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191165399-366",
+      "timestamp": "2026-10-05 09:06:05",
+      "userName": "Vikram Malhotra",
+      "userRole": "Project & Business Unit Manager",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-2",
+      "newValue": "User authenticated successfully with role bu_manager",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191132345-768",
+      "timestamp": "2026-10-05 09:05:32",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Approval Workflow",
+      "entityId": "wf-smp-500-env",
+      "newValue": "Submitted Solar Mega-Park 500MW Facility for BU Manager review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191126349-830",
+      "timestamp": "2026-10-05 09:05:26",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Approval Workflow",
+      "entityId": "wf-hvdc-south-esg",
+      "newValue": "Submitted High Voltage Direct Current Transmission Corridor for BU Manager review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191103283-765",
+      "timestamp": "2026-10-05 09:05:03",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Updated",
+      "entity": "Project Entity",
+      "entityId": "proj-3",
+      "newValue": "Updated fields",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191103282-943",
+      "timestamp": "2026-10-05 09:05:03",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Approval Workflow",
+      "entityId": "wf-gh2-soc",
+      "newValue": "Submitted Green Hydrogen Electrolyzer Pilot Plant for BU Manager review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191102842-711",
+      "timestamp": "2026-10-05 09:05:02",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Environmental Data",
+      "entityId": "env-3",
+      "newValue": "Electricity: 124000 kWh, Fuel: 28000 L",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791191102841-969",
+      "timestamp": "2026-10-05 09:05:02",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Approval Workflow",
+      "entityId": "wf-gh2-soc",
+      "newValue": "Submitted Green Hydrogen Electrolyzer Pilot Plant for BU Manager review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791189626247-464",
+      "timestamp": "2026-10-05 08:40:26",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Uploaded",
+      "entity": "Evidence Document",
+      "entityId": "doc-1791189626246",
+      "newValue": "Uploaded L&T BRSR Report FY2025-26.pdf (environmental)",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791189598272-198",
+      "timestamp": "2026-10-05 08:39:58",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Updated",
+      "entity": "Project Entity",
+      "entityId": "proj-2",
+      "newValue": "Updated fields",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791189597912-280",
+      "timestamp": "2026-10-05 08:39:57",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Updated",
+      "entity": "Environmental Data",
+      "entityId": "env-2",
+      "newValue": "Electricity: 18200000 kWh, Fuel: 62000 L",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791189520054-55",
+      "timestamp": "2026-10-05 08:38:40",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Uploaded",
+      "entity": "Evidence Document",
+      "entityId": "doc-1791189520053",
+      "newValue": "Uploaded Q4_Diesel_Generator_Log.xlsx (environmental)",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791188773371-146",
+      "timestamp": "2026-10-05 08:26:13",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Updated",
+      "entity": "Project Entity",
+      "entityId": "proj-1",
+      "newValue": "Updated fields",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791188764767-50",
+      "timestamp": "2026-10-05 08:26:04",
+      "userName": "Project User",
+      "userRole": "Project Lead",
+      "action": "Updated",
+      "entity": "Project Entity",
+      "entityId": "proj-1",
+      "newValue": "Updated fields",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791188764665-375",
+      "timestamp": "2026-10-05 08:26:04",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Approval Workflow",
+      "entityId": "wf-smp-500-env",
+      "newValue": "Submitted Solar Mega-Park 500MW Facility for BU Manager review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791188754797-914",
+      "timestamp": "2026-10-05 08:25:54",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Lead",
+      "action": "Submitted",
+      "entity": "Approval Workflow",
+      "entityId": "wf-smp-500-env",
+      "newValue": "Submitted Solar Mega-Park 500MW Facility for BU Manager review",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791187730997-570",
+      "timestamp": "2026-10-05 08:08:50",
+      "userName": "Rajesh Verma",
+      "userRole": "Project Sustainability Lead",
+      "action": "Login",
+      "entity": "Session",
+      "entityId": "u-1",
+      "newValue": "User authenticated successfully with role project_user",
+      "ipAddress": "127.0.0.1"
+    },
     {
       "id": "aud-1791116726898-898",
       "timestamp": "2026-10-04 12:25:26",

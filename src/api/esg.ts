@@ -77,6 +77,11 @@ export const esgApi = {
     return res.data;
   },
 
+  submitAllESG: async (projectId: string, userName?: string, category?: string) => {
+    const res = await apiClient.post('/esg/submit-all', { projectId, userName, category });
+    return res.data;
+  },
+
   getESGMetrics: async (category?: string, projectCode?: string): Promise<any[]> => {
     try {
       const params: any = {};

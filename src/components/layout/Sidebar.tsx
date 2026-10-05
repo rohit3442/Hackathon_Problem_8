@@ -25,7 +25,8 @@ import {
   Layers,
   Bell,
   CheckCircle2,
-  Award
+  Award,
+  AlertTriangle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
@@ -92,8 +93,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             items: [
               { name: 'BU Dashboard', path: '/dashboard', icon: LayoutDashboard },
               { name: 'Projects', path: '/projects', icon: FolderKanban },
-              { name: 'Review Submission', path: '/projects/proj-1/review', icon: CheckCircle2, alertCount: 1, indent: true },
-              { name: 'BU Validation', path: '/validation', icon: FileCheck2 },
+              { name: 'Review Center', path: '/review-center', icon: FileCheck2, badge: '3' },
+              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle, badge: '5' },
+              { name: 'Approvals', path: '/approvals', icon: CheckCircle },
               { name: 'BU Analytics', path: '/analytics', icon: BarChart3 },
             ],
           },
@@ -134,6 +136,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         ];
 
       case 'group_admin':
+      case 'group_admin_management':
         return [
           {
             title: 'ENTERPRISE GOVERNANCE',

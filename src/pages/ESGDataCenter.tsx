@@ -22,13 +22,15 @@ import { ProgressBar } from '../components/common/ProgressBar';
 import { Modal } from '../components/common/Modal';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { esgApi, projectsApi } from '../api';
 import { ESGMetricItem } from '../types';
 import { MOCK_PROJECTS } from '../services/mockData';
+import confetti from 'canvas-confetti';
 
 export const ESGDataCenter: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, canEditData } = useAuth();
   const { reportingYear, addToast } = useApp();
 
@@ -45,6 +47,7 @@ export const ESGDataCenter: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isEvidenceModalOpen, setIsEvidenceModalOpen] = useState(false);
   const [selectedMetricForEvidence, setSelectedMetricForEvidence] = useState<ESGMetricItem | null>(null);
+  const [isSubmittingAll, setIsSubmittingAll] = useState(false);
 
   useEffect(() => {
     esgApi.getESGMetrics(activeTab).then(data => {
@@ -62,14 +65,48 @@ export const ESGDataCenter: React.FC = () => {
   });
 
   const handleSaveDraft = (metric: ESGMetricItem) => {
-    addToast('Draft Saved', `Saved updates for ${metric.name}`, 'info');
+    const activeProjObj = projects.find(p => p.code === selectedProject) || projects[0];
+    projectsApi.updateProject(activeProjObj.id, { approvalStatus: 'draft' }).then(() => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      addToast('Draft Saved', `Saved updates for ${metric.name}. Marked as draft submission in dashboard.`, 'info');
+    });
   };
 
   const handleSubmitMetric = (metric: ESGMetricItem) => {
-    esgApi.updateESGMetric(metric.id, { status: 'submitted' }).then(() => {
+    const activeProjObj = projects.find(p => p.code === selectedProject) || projects[0];
+    esgApi.updateESGMetric(metric.id, { status: 'submitted' }).then(async () => {
       setMetrics(prev => prev.map(m => m.id === metric.id ? { ...m, status: 'submitted' } : m));
-      addToast('Submitted for Review', `${metric.name} sent to BU Manager for verification`, 'success');
+      // Submit project to BU Manager so Draft Submissions count decrements and moves to BU Manager Dashboard
+      await esgApi.submitAllESG(activeProjObj.id, user?.name || 'Rajesh Verma', metric.category || 'ESG Consolidated');
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      try {
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+      } catch (e) {}
+      addToast('Submitted for Review', `${metric.name} and project package submitted to Business Unit Manager Vikram Malhotra`, 'success');
     });
+  };
+
+  const handleSubmitAll = async () => {
+    setIsSubmittingAll(true);
+    try {
+      const activeProjObj = projects.find(p => p.code === selectedProject) || projects[0];
+      await esgApi.submitAllESG(activeProjObj.id, user?.name || 'Rajesh Verma', 'ESG Consolidated');
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+      try {
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      } catch (e) {}
+      addToast('ESG Package Submitted', `All ESG disclosures for ${activeProjObj.name} submitted at once to Business Unit Manager Vikram Malhotra`, 'success');
+      setMetrics(prev => prev.map(m => ({ ...m, status: 'submitted' })));
+    } catch (e) {
+      addToast('Submission Failed', 'Could not submit disclosures to server', 'error');
+    } finally {
+      setIsSubmittingAll(false);
+    }
   };
 
   const handleOpenEvidence = (metric: ESGMetricItem) => {
@@ -96,7 +133,7 @@ export const ESGDataCenter: React.FC = () => {
         </div>
 
         {/* Project Selector & Direct Hub Links */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5">
           <div className="flex items-center gap-1.5 bg-white dark:bg-[#141f1b] border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg text-xs">
             <span className="text-slate-400">Site:</span>
             <select
@@ -118,6 +155,17 @@ export const ESGDataCenter: React.FC = () => {
             icon={<ExternalLink className="w-3.5 h-3.5" />}
           >
             Open Dedicated {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Hub
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleSubmitAll}
+            loading={isSubmittingAll}
+            disabled={!canEditData}
+            icon={<Send className="w-3.5 h-3.5" />}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
+          >
+            Submit All to BU Manager
           </Button>
         </div>
       </div>

@@ -20,6 +20,7 @@ import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { esgApi } from '../api';
+import confetti from 'canvas-confetti';
 
 export const SocialHub: React.FC = () => {
   const { user, canEditData } = useAuth();
@@ -39,7 +40,7 @@ export const SocialHub: React.FC = () => {
   const [csrSpentCr, setCsrSpentCr] = useState(84.5);
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (status: 'draft' | 'submitted') => {
       return await esgApi.saveSocial({
         projectId: 'proj-1',
         reportingPeriod: reportingYear || 'FY 2025-26',
@@ -49,22 +50,32 @@ export const SocialHub: React.FC = () => {
         ltifr,
         avgTrainingHoursPerPerson: avgTrainingHrs,
         csrSpentCr,
-        status: 'submitted',
+        status,
         userName: user?.name || 'Project User'
       });
     },
-    onSuccess: () => {
+    onSuccess: (_, status) => {
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      addToast('Social Metrics Saved', 'Workforce census & safety indicators updated in database', 'success');
+      queryClient.invalidateQueries({ queryKey: ['approvals'] });
+      if (status === 'submitted') {
+        try { confetti({ particleCount: 70, spread: 60 }); } catch (e) {}
+        addToast('Submitted to BU Manager', 'Social disclosures package submitted to Vikram Malhotra for Stage 1 signoff', 'success');
+      } else {
+        addToast('Draft Saved', 'Workforce census & safety indicators recorded in draft state', 'info');
+      }
     },
     onError: () => {
-      addToast('Sync Warning', 'Saved locally. Ensure API server is listening on port 3001.', 'info');
+      addToast('Sync Warning', 'Saved locally. Ensure API server is listening on port 3000.', 'info');
     }
   });
 
   const handleSave = () => {
-    saveMutation.mutate();
+    saveMutation.mutate('draft');
+  };
+
+  const handleSubmit = () => {
+    saveMutation.mutate('submitted');
   };
 
   return (
@@ -98,8 +109,8 @@ export const SocialHub: React.FC = () => {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => addToast('Submitted', 'Social disclosures submitted to BU Manager', 'success')}
-            disabled={!canEditData}
+            onClick={handleSubmit}
+            disabled={!canEditData || saveMutation.isPending}
             icon={<Send className="w-3.5 h-3.5" />}
           >
             Submit for Signoff

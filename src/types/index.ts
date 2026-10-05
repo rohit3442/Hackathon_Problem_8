@@ -3,7 +3,9 @@ export type UserRole =
   | 'bu_manager'
   | 'subsidiary_admin'
   | 'esg_team'
-  | 'group_admin_management';
+  | 'group_admin_management'
+  | 'group_admin'
+  | 'management';
 
 export interface UserProfile {
   id: string;
@@ -102,6 +104,89 @@ export interface ProjectEntity {
   leadPerson: string;
   reportingYear?: string;
   description?: string;
+}
+
+export type ReviewItemStatus = 
+  | 'OPEN'
+  | 'CORRECTION_REQUESTED'
+  | 'CORRECTION_SUBMITTED'
+  | 'UNDER_REVIEW'
+  | 'RESOLVED'
+  | 'APPROVED';
+
+export interface ReviewThreadMessage {
+  id: string;
+  author: string;
+  role: string;
+  message: string;
+  timestamp: string;
+  type?: 'comment' | 'response' | 'resolution';
+  attachment?: string;
+}
+
+export interface ReviewRequest {
+  id: string;
+  submissionId: string;
+  projectId: string;
+  projectName?: string;
+  projectCode?: string;
+  reportingPeriodId?: string;
+  reportingPeriod: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewerRole: string;
+  assigneeId?: string;
+  assigneeName: string;
+  assigneeRole: string;
+  section: 'Environmental' | 'Social' | 'Governance' | 'Evidence' | 'Validation & AI' | string;
+  category: string;
+  metric: string;
+  fieldPath: string;
+  currentValue: string | number;
+  previousValue?: string | number;
+  variancePct?: number;
+  aiAnomalySeverity?: 'low' | 'medium' | 'high' | string;
+  issueType: 'Verification Required' | 'Evidence Missing' | 'Calculation Variance' | 'Threshold Exceeded' | 'Compliance Document Missing' | string;
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  comment: string;
+  requiredAction: string;
+  status: ReviewItemStatus;
+  isDraft?: boolean;
+  thread?: ReviewThreadMessage[];
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
+}
+
+export interface ReviewResponse {
+  id: string;
+  reviewRequestId: string;
+  responderId: string;
+  responderName: string;
+  response: string;
+  correctedValue?: string | number;
+  evidenceId?: string;
+  evidenceName?: string;
+  createdAt: string;
+}
+
+export interface NotificationItem {
+  id: string;
+  userId?: string;
+  type: 'CORRECTION_REQUESTED' | 'CORRECTION_SUBMITTED' | 'REVIEW_RESOLVED' | 'SUBMISSION_APPROVED' | 'VALIDATION_ALERT' | string;
+  title: string;
+  message: string;
+  projectId: string;
+  projectName?: string;
+  submissionId?: string;
+  reviewRequestId?: string;
+  section?: string;
+  category?: string;
+  metric?: string;
+  fieldPath?: string;
+  priority?: 'Low' | 'Medium' | 'High' | 'Critical';
+  isRead: boolean;
+  createdAt: string;
 }
 
 export interface BusinessUnitEntity {

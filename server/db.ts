@@ -28,6 +28,9 @@ export interface DBState {
   esg_sdg_mapping: any[];
   reports: any[];
   audit_logs: any[];
+  review_requests: any[];
+  review_responses: any[];
+  notifications: any[];
 }
 
 export function getInitialSeedData(): DBState {
@@ -132,10 +135,10 @@ export function getInitialSeedData(): DBState {
         businessUnitName: 'Renewables & Power Transmission',
         location: 'Bhadla Solar Complex, Rajasthan',
         state: 'Rajasthan',
-        esgCompletion: 95,
-        brsrCompletion: 92,
+        esgCompletion: 75,
+        brsrCompletion: 70,
         validationStatus: 'clean',
-        approvalStatus: 'approved',
+        approvalStatus: 'draft',
         lastUpdated: '2026-03-28',
         leadPerson: 'Rajesh Verma',
         reportingYear: 'FY 2025-26',
@@ -756,6 +759,283 @@ export function getInitialSeedData(): DBState {
         newValue: 'Approved & Forwarded to Group ESG',
         ipAddress: '10.240.10.15'
       }
+    ],
+    review_requests: [
+      {
+        id: 'rev-smp500-elec-01',
+        submissionId: 'subm-smp500-fy26',
+        projectId: 'proj-1',
+        projectCode: 'SMP-500',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        reportingPeriod: 'FY 2025-26',
+        reviewerId: 'usr-3',
+        reviewerName: 'Vikram Malhotra',
+        reviewerRole: 'Business Unit Manager',
+        assigneeId: 'usr-1',
+        assigneeName: 'Rajesh Verma',
+        assigneeRole: 'Project Manager',
+        section: 'Environmental',
+        category: 'Energy',
+        metric: 'Grid Electricity',
+        fieldPath: 'environmental/energy/grid-electricity',
+        currentValue: '100,000 kWh',
+        previousValue: '84,000 kWh',
+        variancePct: 19.0,
+        aiAnomalySeverity: 'medium',
+        issueType: 'Verification Required',
+        priority: 'Medium',
+        comment: 'Please verify the reported electricity consumption and supporting evidence. The value increased by 19% compared with the previous reporting period.',
+        requiredAction: 'Verify value and upload supporting evidence.',
+        status: 'CORRECTION_REQUESTED',
+        isDraft: false,
+        thread: [
+          {
+            id: 'th-1',
+            author: 'Vikram Malhotra',
+            role: 'Business Unit Manager',
+            message: 'Please verify the reported electricity consumption and supporting evidence. The value increased by 19% compared with the previous reporting period.',
+            timestamp: '2026-10-05 09:20',
+            type: 'comment'
+          }
+        ],
+        createdAt: '2026-10-05 09:20',
+        updatedAt: '2026-10-05 09:20'
+      },
+      {
+        id: 'rev-smp500-fuel-02',
+        submissionId: 'subm-smp500-fy26',
+        projectId: 'proj-1',
+        projectCode: 'SMP-500',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        reportingPeriod: 'FY 2025-26',
+        reviewerId: 'usr-3',
+        reviewerName: 'Vikram Malhotra',
+        reviewerRole: 'Business Unit Manager',
+        assigneeId: 'usr-1',
+        assigneeName: 'Rajesh Verma',
+        assigneeRole: 'Project Manager',
+        section: 'Environmental',
+        category: 'Energy',
+        metric: 'Stationary Diesel / Fuel',
+        fieldPath: 'environmental/energy/fuel',
+        currentValue: '25,000 Litres',
+        previousValue: '24,000 Litres',
+        variancePct: 4.2,
+        issueType: 'Evidence Missing',
+        priority: 'High',
+        comment: 'Please upload the supporting diesel consumption invoice.',
+        requiredAction: 'Upload verified fuel delivery slips and DG meter logs.',
+        status: 'CORRECTION_REQUESTED',
+        isDraft: false,
+        thread: [
+          {
+            id: 'th-2',
+            author: 'Vikram Malhotra',
+            role: 'Business Unit Manager',
+            message: 'Please upload the supporting diesel consumption invoice.',
+            timestamp: '2026-10-05 09:22',
+            type: 'comment'
+          }
+        ],
+        createdAt: '2026-10-05 09:22',
+        updatedAt: '2026-10-05 09:22'
+      },
+      {
+        id: 'rev-smp500-water-03',
+        submissionId: 'subm-smp500-fy26',
+        projectId: 'proj-1',
+        projectCode: 'SMP-500',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        reportingPeriod: 'FY 2025-26',
+        reviewerId: 'usr-3',
+        reviewerName: 'Vikram Malhotra',
+        reviewerRole: 'Business Unit Manager',
+        assigneeId: 'usr-1',
+        assigneeName: 'Rajesh Verma',
+        assigneeRole: 'Project Manager',
+        section: 'Environmental',
+        category: 'Water',
+        metric: 'Recycled / Reused Water',
+        fieldPath: 'environmental/water/recycled',
+        currentValue: '18,500 KL (37.0%)',
+        previousValue: '15,000 KL',
+        variancePct: 23.3,
+        issueType: 'Calculation Variance',
+        priority: 'Low',
+        comment: 'Water recycling ratio meets SEBI BRSR P6 guidance. Flowmeter verification attached.',
+        requiredAction: 'None. Approved by reviewer.',
+        status: 'APPROVED',
+        isDraft: false,
+        thread: [
+          {
+            id: 'th-3',
+            author: 'Vikram Malhotra',
+            role: 'Business Unit Manager',
+            message: 'Water recycling ratio verified against STP flowmeter log. Approved.',
+            timestamp: '2026-10-05 09:25',
+            type: 'resolution'
+          }
+        ],
+        createdAt: '2026-10-05 09:25',
+        updatedAt: '2026-10-05 09:25'
+      },
+      {
+        id: 'rev-smp500-gov-04',
+        submissionId: 'subm-smp500-fy26',
+        projectId: 'proj-1',
+        projectCode: 'SMP-500',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        reportingPeriod: 'FY 2025-26',
+        reviewerId: 'usr-3',
+        reviewerName: 'Vikram Malhotra',
+        reviewerRole: 'Business Unit Manager',
+        assigneeId: 'usr-1',
+        assigneeName: 'Rajesh Verma',
+        assigneeRole: 'Project Manager',
+        section: 'Governance',
+        category: 'Ethics & Compliance',
+        metric: 'Anti-Corruption Policy Affirmation',
+        fieldPath: 'governance/ethics/anti-corruption',
+        currentValue: 'Affirmed (Yes)',
+        issueType: 'Compliance Document Missing',
+        priority: 'Medium',
+        comment: 'Please provide the required signed vendor code of conduct and anti-bribery training attendance sheet.',
+        requiredAction: 'Upload signed compliance certificate.',
+        status: 'CORRECTION_SUBMITTED',
+        isDraft: false,
+        thread: [
+          {
+            id: 'th-4a',
+            author: 'Vikram Malhotra',
+            role: 'Business Unit Manager',
+            message: 'Please provide the required signed vendor code of conduct and anti-bribery training attendance sheet.',
+            timestamp: '2026-10-05 08:30',
+            type: 'comment'
+          },
+          {
+            id: 'th-4b',
+            author: 'Rajesh Verma',
+            role: 'Project Manager',
+            message: 'Uploaded signed compliance affirmation pack and training register batch #21.',
+            timestamp: '2026-10-05 09:10',
+            type: 'response',
+            attachment: 'Signed_Anti_Bribery_Affirmation_FY26.pdf'
+          }
+        ],
+        createdAt: '2026-10-05 08:30',
+        updatedAt: '2026-10-05 09:10'
+      },
+      {
+        id: 'rev-smp500-doc-05',
+        submissionId: 'subm-smp500-fy26',
+        projectId: 'proj-1',
+        projectCode: 'SMP-500',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        reportingPeriod: 'FY 2025-26',
+        reviewerId: 'usr-3',
+        reviewerName: 'Vikram Malhotra',
+        reviewerRole: 'Business Unit Manager',
+        assigneeId: 'usr-1',
+        assigneeName: 'Rajesh Verma',
+        assigneeRole: 'Project Manager',
+        section: 'Evidence',
+        category: 'Invoices',
+        metric: 'Electricity Invoice Verification',
+        fieldPath: 'documents/invoices/electricity',
+        currentValue: 'DISCOM_Power_Invoices_FY26.pdf',
+        issueType: 'Verification Required',
+        priority: 'Low',
+        comment: 'Please upload evidence clearly identifying the billing cycles for Q3 and Q4.',
+        requiredAction: 'Upload complete consolidated invoice.',
+        status: 'RESOLVED',
+        isDraft: false,
+        thread: [
+          {
+            id: 'th-5a',
+            author: 'Vikram Malhotra',
+            role: 'Business Unit Manager',
+            message: 'Please upload evidence clearly identifying the billing cycles for Q3 and Q4.',
+            timestamp: '2026-10-05 08:00',
+            type: 'comment'
+          },
+          {
+            id: 'th-5b',
+            author: 'Rajesh Verma',
+            role: 'Project Manager',
+            message: 'Attached consolidated quarterly billing statements from state DISCOM.',
+            timestamp: '2026-10-05 08:45',
+            type: 'response'
+          },
+          {
+            id: 'th-5c',
+            author: 'Vikram Malhotra',
+            role: 'Business Unit Manager',
+            message: 'Correction reviewed and accepted. Billing cycle verified.',
+            timestamp: '2026-10-05 09:00',
+            type: 'resolution'
+          }
+        ],
+        createdAt: '2026-10-05 08:00',
+        updatedAt: '2026-10-05 09:00',
+        resolvedAt: '2026-10-05 09:00'
+      }
+    ],
+    review_responses: [],
+    notifications: [
+      {
+        id: 'notif-1',
+        userId: 'usr-1',
+        type: 'CORRECTION_REQUESTED',
+        title: 'Correction Requested',
+        message: 'Please verify the reported electricity consumption and supporting evidence.',
+        projectId: 'proj-1',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        submissionId: 'subm-smp500-fy26',
+        reviewRequestId: 'rev-smp500-elec-01',
+        section: 'Environmental',
+        category: 'Energy',
+        metric: 'Grid Electricity',
+        fieldPath: 'environmental/energy/grid-electricity',
+        priority: 'Medium',
+        isRead: false,
+        createdAt: '5 minutes ago'
+      },
+      {
+        id: 'notif-2',
+        userId: 'usr-1',
+        type: 'CORRECTION_REQUESTED',
+        title: 'Evidence Correction Requested',
+        message: 'Please upload the supporting diesel consumption invoice.',
+        projectId: 'proj-1',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        submissionId: 'subm-smp500-fy26',
+        reviewRequestId: 'rev-smp500-fuel-02',
+        section: 'Environmental',
+        category: 'Energy',
+        metric: 'Stationary Diesel / Fuel',
+        fieldPath: 'environmental/energy/fuel',
+        priority: 'High',
+        isRead: false,
+        createdAt: '10 minutes ago'
+      },
+      {
+        id: 'notif-3',
+        userId: 'usr-3',
+        type: 'CORRECTION_SUBMITTED',
+        title: 'Correction Submitted',
+        message: 'Project Manager Rajesh Verma has submitted corrected documents for Anti-Corruption Policy Affirmation.',
+        projectId: 'proj-1',
+        projectName: 'Solar Mega-Park 500MW (SMP-500)',
+        submissionId: 'subm-smp500-fy26',
+        reviewRequestId: 'rev-smp500-gov-04',
+        section: 'Governance',
+        category: 'Ethics & Compliance',
+        metric: 'Anti-Corruption Policy Affirmation',
+        fieldPath: 'governance/ethics/anti-corruption',
+        priority: 'Medium',
+        isRead: false,
+        createdAt: '25 minutes ago'
+      }
     ]
   };
 }
@@ -784,6 +1064,16 @@ class DatabaseManager {
         // Synchronize users and roles from code definition to guarantee latest schema and credentials
         parsed.users = seed.users;
         parsed.roles = seed.roles;
+
+        if (!parsed.review_requests || !Array.isArray(parsed.review_requests) || parsed.review_requests.length === 0) {
+          parsed.review_requests = seed.review_requests;
+        }
+        if (!parsed.review_responses || !Array.isArray(parsed.review_responses)) {
+          parsed.review_responses = seed.review_responses;
+        }
+        if (!parsed.notifications || !Array.isArray(parsed.notifications) || parsed.notifications.length === 0) {
+          parsed.notifications = seed.notifications;
+        }
 
         // Auto-migration: migrate any existing users or steps having role 'group_admin' or 'management'
         if (Array.isArray(parsed.users)) {
@@ -820,6 +1110,10 @@ class DatabaseManager {
   private save(data?: DBState) {
     if (data) this.state = data;
     try {
+      const dir = path.dirname(DB_PATH);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
       fs.writeFileSync(DB_PATH, JSON.stringify(this.state, null, 2), 'utf-8');
     } catch (e) {
       console.error('Error writing db.json:', e);

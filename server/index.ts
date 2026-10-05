@@ -241,11 +241,127 @@ app.post('/api/v1/projects', (req, res) => {
   res.status(201).json(newProj);
 });
 
+function handleProjectSubmission(projectId: string, userName: string = 'Project User', category: string = 'Environmental') {
+  const projs = db.getTable('projects');
+  const proj = projs.find(p => p.id === projectId || p.code === projectId);
+  if (!proj) return null;
+
+  // 1. Update project approvalStatus to 'submitted'
+  const updatedProj = db.update('projects', proj.id, {
+    approvalStatus: 'submitted',
+    esgCompletion: 100,
+    lastUpdated: new Date().toISOString().substring(0, 10),
+  });
+
+  // 2. Update or create the approval workflow in approval_workflows
+  const workflows = db.getTable('approval_workflows');
+  let wf = workflows.find(w => w.projectId === proj.id || w.projectCode === proj.code);
+
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  if (wf) {
+    wf.overallStatus = 'submitted';
+    wf.currentStepIndex = 1; // Stage 1: BU Manager Review
+    wf.submittedBy = userName;
+    wf.submittedAt = timestamp;
+    if (wf.steps && wf.steps.length > 0) {
+      wf.steps[0].status = 'approved';
+      wf.steps[0].actionBy = userName;
+      wf.steps[0].actionAt = timestamp;
+      wf.steps[0].comments = 'ESG disclosures and verified telemetry submitted.';
+      if (wf.steps.length > 1) {
+        wf.steps[1].status = 'in_progress';
+      }
+      for (let i = 2; i < wf.steps.length; i++) {
+        wf.steps[i].status = 'pending';
+      }
+    }
+    db.setTable('approval_workflows', workflows);
+  } else {
+    wf = {
+      id: `wf-${proj.code.toLowerCase()}-${category.toLowerCase().substring(0, 3)}`,
+      projectId: proj.id,
+      projectCode: proj.code,
+      projectName: proj.name,
+      category,
+      reportingPeriod: 'FY 2025-26',
+      currentStepIndex: 1,
+      overallStatus: 'submitted',
+      submittedBy: userName,
+      submittedAt: timestamp,
+      steps: [
+        {
+          level: 'project',
+          label: '1. Project Data Entry',
+          role: 'project_user',
+          status: 'approved',
+          actionBy: userName,
+          actionAt: timestamp,
+          comments: 'Operational ESG data entry and telemetry verified by Project Lead.'
+        },
+        {
+          level: 'bu',
+          label: '2. BU Manager Review',
+          role: 'bu_manager',
+          status: 'in_progress',
+          actionBy: 'Vikram Malhotra',
+          actionAt: '',
+          comments: ''
+        },
+        {
+          level: 'subsidiary',
+          label: '3. Subsidiary Admin Signoff',
+          role: 'subsidiary_admin',
+          status: 'pending',
+          actionBy: 'Sunita Rao',
+          actionAt: '',
+          comments: ''
+        },
+        {
+          level: 'esg_team',
+          label: '4. ESG Team Technical Validation',
+          role: 'esg_team',
+          status: 'pending',
+          actionBy: 'Dr. Ananya Sen',
+          actionAt: '',
+          comments: ''
+        },
+        {
+          level: 'management',
+          label: '5. Group Admin & Management Signoff',
+          role: 'group_admin_management',
+          status: 'pending',
+          actionBy: 'Deepak Khaitan',
+          actionAt: '',
+          comments: ''
+        }
+      ],
+      evidenceCount: 6,
+      summaryHighlights: `${category} data submitted to BU Manager for verification.`
+    };
+    db.insert('approval_workflows', wf);
+  }
+
+  db.logAudit(userName, 'Project Lead', 'Submitted', 'Approval Workflow', wf.id, `Submitted ${proj.name} for BU Manager review`);
+  return { project: updatedProj, workflow: wf };
+}
+
 app.put('/api/v1/projects/:id', (req, res) => {
   const updated = db.update('projects', req.params.id, req.body);
   if (!updated) return res.status(404).json({ error: 'Project not found' });
+
+  if (req.body.approvalStatus === 'submitted') {
+    handleProjectSubmission(req.params.id, req.body.userName, req.body.category || 'Environmental');
+  }
+
   db.logAudit('Project User', 'Project Lead', 'Updated', 'Project Entity', req.params.id, `Updated fields`);
   res.json(updated);
+});
+
+app.post('/api/v1/projects/:id/submit', (req, res) => {
+  const result = handleProjectSubmission(req.params.id, req.body.userName, req.body.category || 'Environmental');
+  if (!result) return res.status(404).json({ error: 'Project not found' });
+  res.json(result);
 });
 
 // ==========================================
@@ -311,11 +427,17 @@ app.post('/api/v1/esg/environmental', (req, res) => {
     db.insert('environmental_data', record);
   }
 
-  // Auto-update project ESG completion
-  db.update('projects', record.projectId, { esgCompletion: 96, lastUpdated: record.lastUpdated });
+  // Auto-update project ESG completion & approvalStatus
+  if (record.status === 'submitted') {
+    handleProjectSubmission(record.projectId, body.userName, 'Environmental');
+  } else if (record.status === 'draft') {
+    db.update('projects', record.projectId, { approvalStatus: 'draft', esgCompletion: 95, lastUpdated: record.lastUpdated });
+  } else {
+    db.update('projects', record.projectId, { esgCompletion: 96, lastUpdated: record.lastUpdated });
+  }
 
   // Add audit trail
-  db.logAudit(body.userName || 'Project User', 'Project Lead', 'Updated', 'Environmental Data', record.id, `Saved Electricity: ${electricityKwh} kWh, Fuel: ${fuelLitres} L`);
+  db.logAudit(body.userName || 'Project User', 'Project Lead', record.status === 'submitted' ? 'Submitted' : 'Updated', 'Environmental Data', record.id, `Electricity: ${electricityKwh} kWh, Fuel: ${fuelLitres} L`);
 
   res.status(201).json(record);
 });
@@ -342,7 +464,12 @@ app.post('/api/v1/esg/social', (req, res) => {
   };
 
   db.insert('social_data', record);
-  db.logAudit(body.userName || 'Project User', 'Project Lead', 'Updated', 'Social Data', record.id, `Saved Workforce & Safety Census`);
+  if (record.status === 'submitted') {
+    handleProjectSubmission(record.projectId, body.userName, 'Social');
+  } else if (record.status === 'draft') {
+    db.update('projects', record.projectId, { approvalStatus: 'draft', lastUpdated: record.lastUpdated });
+  }
+  db.logAudit(body.userName || 'Project User', 'Project Lead', record.status === 'submitted' ? 'Submitted' : 'Updated', 'Social Data', record.id, `Saved Workforce & Safety Census`);
   res.status(201).json(record);
 });
 
@@ -361,9 +488,29 @@ app.post('/api/v1/esg/governance', (req, res) => {
   };
 
   db.insert('governance_data', record);
-  db.logAudit(body.userName || 'Project User', 'Project Lead', 'Updated', 'Governance Data', record.id, `Updated Policy Disclosures`);
+  if (record.status === 'submitted') {
+    handleProjectSubmission(record.projectId, body.userName, 'Governance');
+  } else if (record.status === 'draft') {
+    db.update('projects', record.projectId, { approvalStatus: 'draft', lastUpdated: record.lastUpdated });
+  }
+  db.logAudit(body.userName || 'Project User', 'Project Lead', record.status === 'submitted' ? 'Submitted' : 'Updated', 'Governance Data', record.id, `Updated Policy Disclosures`);
   res.status(201).json(record);
 });
+
+// Single-click full ESG submission endpoint ("as once")
+const handleEsgSubmitAll = (req: any, res: any) => {
+  const { projectId = 'proj-1', userName = 'Project User', category = 'ESG Consolidated' } = req.body;
+  const result = handleProjectSubmission(projectId, userName, category);
+  if (!result) return res.status(404).json({ error: 'Project not found' });
+  res.json({
+    success: true,
+    message: `All ESG disclosures for ${result.project.name} submitted successfully to Business Unit Manager`,
+    ...result
+  });
+};
+
+app.post('/api/v1/esg/submit-all', handleEsgSubmitAll);
+app.post('/api/v1/esg/submit', handleEsgSubmitAll);
 
 app.get('/api/v1/esg/metrics', (req, res) => {
   const { category, projectCode } = req.query;
@@ -391,8 +538,14 @@ app.put('/api/v1/esg/metrics/:id', (req, res) => {
 // 6. AI ANOMALY DETECTION ENGINE
 // ==========================================
 app.post('/api/v1/validation/anomalies/check', (req, res) => {
-  const { metric, value, historical = [] } = req.body;
-  const result = evaluateAnomaly(metric, Number(value), historical);
+  const { metric, value, historical = [], category = 'Environmental', upperLimit, lowerLimit, baseline, ruleCode } = req.body;
+  const result = evaluateAnomaly(metric, Number(value), historical, {
+    category: category.toLowerCase() as any,
+    upperLimit: upperLimit !== undefined ? Number(upperLimit) : undefined,
+    lowerLimit: lowerLimit !== undefined ? Number(lowerLimit) : undefined,
+    baseline: baseline !== undefined ? Number(baseline) : undefined,
+    ruleCode
+  });
 
   if (result.isAnomaly) {
     const alertRecord = {
@@ -402,10 +555,10 @@ app.post('/api/v1/validation/anomalies/check', (req, res) => {
       project: 'Active Project',
       businessUnit: 'Active Unit',
       subsidiary: 'Active Subsidiary',
-      category: 'Environmental',
+      category,
       currentValue: `${value}`,
       previousValue: `${result.expectedBaseline}`,
-      rule: 'AI-STATISTICAL-OUTLIER',
+      rule: result.ruleCode || 'AI-STATISTICAL-OUTLIER',
       severity: result.severity,
       status: 'open',
       detectedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
@@ -421,6 +574,68 @@ app.post('/api/v1/validation/anomalies/check', (req, res) => {
 app.get('/api/v1/validation/anomalies', (req, res) => {
   const valResults = db.getTable('validation_results');
   res.json(valResults);
+});
+
+// ==========================================
+// 6b. EVIDENCE DOCUMENTS & INVOICES
+// ==========================================
+app.get('/api/v1/projects/:id/documents', (req, res) => {
+  const { id } = req.params;
+  const { category } = req.query;
+  let docs = db.getTable('documents') || [];
+  docs = docs.filter(d => d.projectId === id || d.projectCode === id || id === 'all');
+  if (category && category !== 'all') {
+    docs = docs.filter(d => d.category === category);
+  }
+  res.json(docs);
+});
+
+app.get('/api/v1/documents', (req, res) => {
+  const { projectId, category } = req.query;
+  let docs = db.getTable('documents') || [];
+  if (projectId) {
+    docs = docs.filter(d => d.projectId === projectId || d.projectCode === projectId);
+  }
+  if (category && category !== 'all') {
+    docs = docs.filter(d => d.category === category);
+  }
+  res.json(docs);
+});
+
+app.post('/api/v1/projects/:id/documents', (req, res) => {
+  const { id } = req.params;
+  const body = req.body;
+  const projs = db.getTable('projects');
+  const proj = projs.find(p => p.id === id || p.code === id);
+
+  const newDoc = {
+    id: `doc-${Date.now()}`,
+    projectId: id,
+    projectCode: proj ? proj.code : 'SMP-500',
+    title: body.title || body.fileName || 'Untitled Document',
+    fileName: body.fileName || 'Document.pdf',
+    fileType: body.fileType || 'pdf',
+    fileSize: body.fileSize || '1.5 MB',
+    category: body.category || 'environmental',
+    subCategory: body.subCategory || 'General Evidence',
+    description: body.description || '',
+    uploadedBy: body.uploadedBy || 'Rajesh Verma',
+    uploadedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+    verified: true,
+    sha256: Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)
+  };
+
+  db.insert('documents', newDoc);
+  db.logAudit(newDoc.uploadedBy, 'Project Lead', 'Uploaded', 'Evidence Document', newDoc.id, `Uploaded ${newDoc.fileName} (${newDoc.category})`);
+
+  res.status(201).json(newDoc);
+});
+
+app.delete('/api/v1/projects/:id/documents/:docId', (req, res) => {
+  const { docId } = req.params;
+  const deleted = db.delete('documents', docId);
+  db.logAudit('Project User', 'Project Lead', 'Deleted', 'Evidence Document', docId, `Removed evidence record`);
+  res.json({ success: !!deleted });
 });
 
 // ==========================================
@@ -531,11 +746,27 @@ app.post('/api/v1/approvals/:id/action', (req, res) => {
   const { id } = req.params;
   const { action, comments, userName = 'Current User', userRole = 'Approver' } = req.body;
   const workflows = db.getTable('approval_workflows');
-  const wf = workflows.find(w => 
+  let wf = workflows.find(w => 
     w.id === id || 
     (id === 'appr-1' && w.id === 'wf-smp-500-env') || 
-    w.projectId === id
-  ) || workflows[0];
+    w.projectId === id ||
+    w.projectCode === id
+  );
+
+  // If no workflow found, auto-provision from project
+  if (!wf) {
+    const proj = db.getTable('projects').find(p => p.id === id || p.code === id);
+    if (proj) {
+      const subResult = handleProjectSubmission(proj.id, proj.leadPerson || 'Project User', 'Environmental');
+      if (subResult) {
+        wf = subResult.workflow;
+      }
+    }
+  }
+
+  if (!wf) {
+    wf = workflows[0];
+  }
 
   if (!wf) return res.status(404).json({ error: 'Workflow not found' });
 
@@ -549,21 +780,34 @@ app.post('/api/v1/approvals/:id/action', (req, res) => {
         status: 'approved',
         actionBy: userName,
         actionAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
-        comments: comments || 'Approved in accordance with compliance standards.'
+        comments: comments || 'Approved and validated in accordance with compliance standards.'
       };
     }
     const nextIdx = Math.min(currentIdx + 1, steps.length - 1);
     if (steps[nextIdx] && steps[nextIdx].status === 'pending') {
       steps[nextIdx].status = 'in_progress';
     }
-    const isFinal = currentIdx >= steps.length - 2;
+    const isFinal = currentIdx >= steps.length - 1;
+
+    let targetOverallStatus: string;
+    if (isFinal) {
+      targetOverallStatus = 'approved';
+    } else if (currentIdx === 1) {
+      // Step 1: BU Manager has validated -> Forwarded to Subsidiary Admin
+      targetOverallStatus = 'under_subsidiary_review';
+    } else if (currentIdx === 2) {
+      // Step 2: Subsidiary Admin validated -> Forwarded to ESG Team
+      targetOverallStatus = 'under_esg_review';
+    } else {
+      targetOverallStatus = 'under_review';
+    }
 
     wf.currentStepIndex = nextIdx;
     wf.steps = steps;
-    wf.overallStatus = isFinal ? 'approved' : 'under_review';
+    wf.overallStatus = targetOverallStatus;
 
-    db.update('projects', wf.projectId, { approvalStatus: wf.overallStatus });
-    db.logAudit(userName, userRole, 'Approved', 'Approval Workflow', id, `Step approved: ${steps[currentIdx]?.label}`);
+    db.update('projects', wf.projectId, { approvalStatus: targetOverallStatus });
+    db.logAudit(userName, userRole, 'Approved', 'Approval Workflow', id, `Step approved: ${steps[currentIdx]?.label} -> Forwarded to next stage`);
   } else if (action === 'request_correction' || action === 'reject') {
     if (steps[currentIdx]) {
       steps[currentIdx] = {
@@ -693,6 +937,434 @@ app.post('/api/v1/users', (req, res) => {
   db.insert('users', newUser);
   db.logAudit('Group Admin', 'Admin', 'Created', 'User Account', newUser.id, `Created user ${newUser.name}`);
   res.status(201).json(newUser);
+});
+
+// ==========================================
+// 13. REVIEW CENTER & CORRECTION REQUEST WORKFLOW
+// ==========================================
+app.get('/api/v1/reviews', (req, res) => {
+  const { projectId, submissionId, status, isDraft, section } = req.query;
+  let reviews = db.getTable('review_requests') || [];
+
+  if (projectId && projectId !== 'all') {
+    reviews = reviews.filter((r: any) => r.projectId === projectId || r.projectCode === projectId);
+  }
+  if (submissionId && submissionId !== 'all') {
+    reviews = reviews.filter((r: any) => r.submissionId === submissionId);
+  }
+  if (status && status !== 'all') {
+    reviews = reviews.filter((r: any) => r.status === status);
+  }
+  if (isDraft !== undefined) {
+    const draftBool = isDraft === 'true' || isDraft === true;
+    reviews = reviews.filter((r: any) => !!r.isDraft === draftBool);
+  }
+  if (section && section !== 'all') {
+    reviews = reviews.filter((r: any) => r.section.toLowerCase() === (section as string).toLowerCase());
+  }
+
+  res.json(reviews);
+});
+
+app.get('/api/v1/reviews/:id', (req, res) => {
+  const reviews = db.getTable('review_requests') || [];
+  const review = reviews.find((r: any) => r.id === req.params.id);
+  if (!review) return res.status(404).json({ error: 'Review request not found' });
+  res.json(review);
+});
+
+app.post('/api/v1/reviews', (req, res) => {
+  const body = req.body;
+  const projects = db.getTable('projects') || [];
+  const proj = projects.find((p: any) => p.id === body.projectId || p.code === body.projectId);
+
+  const isDraft = body.isDraft ?? false;
+  const status = isDraft ? 'OPEN' : 'CORRECTION_REQUESTED';
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  const newReview = {
+    id: `rev-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    submissionId: body.submissionId || (proj ? `subm-${proj.code.toLowerCase()}-fy26` : 'subm-1'),
+    projectId: body.projectId || (proj ? proj.id : 'proj-1'),
+    projectCode: proj ? proj.code : (body.projectCode || 'SMP-500'),
+    projectName: proj ? proj.name : (body.projectName || 'Operational Facility'),
+    reportingPeriod: body.reportingPeriod || 'FY 2025-26',
+    reviewerId: body.reviewerId || 'usr-3',
+    reviewerName: body.reviewerName || 'Vikram Malhotra',
+    reviewerRole: body.reviewerRole || 'Business Unit Manager',
+    assigneeId: body.assigneeId || 'usr-1',
+    assigneeName: proj?.leadPerson || body.assigneeName || 'Rajesh Verma',
+    assigneeRole: 'Project Manager',
+    section: body.section || 'Environmental',
+    category: body.category || 'General',
+    metric: body.metric || 'Reported Value',
+    fieldPath: body.fieldPath || 'environmental/energy',
+    currentValue: body.currentValue || '',
+    previousValue: body.previousValue || '',
+    variancePct: body.variancePct || 0,
+    aiAnomalySeverity: body.aiAnomalySeverity || 'low',
+    issueType: body.issueType || 'Verification Required',
+    priority: body.priority || 'Medium',
+    comment: body.comment || '',
+    requiredAction: body.requiredAction || 'Verify value and upload supporting evidence.',
+    status,
+    isDraft,
+    thread: [
+      {
+        id: `th-${Date.now()}`,
+        author: body.reviewerName || 'Vikram Malhotra',
+        role: 'Business Unit Manager',
+        message: body.comment || 'Correction requested on submitted metric.',
+        timestamp,
+        type: 'comment'
+      }
+    ],
+    createdAt: timestamp,
+    updatedAt: timestamp
+  };
+
+  db.insert('review_requests', newReview);
+
+  // If not draft, create notification for Project Manager
+  if (!isDraft) {
+    const newNotif = {
+      id: `notif-${Date.now()}`,
+      userId: 'usr-1',
+      type: 'CORRECTION_REQUESTED',
+      title: 'Correction Requested',
+      message: newReview.comment,
+      projectId: newReview.projectId,
+      projectName: newReview.projectName,
+      submissionId: newReview.submissionId,
+      reviewRequestId: newReview.id,
+      section: newReview.section,
+      category: newReview.category,
+      metric: newReview.metric,
+      fieldPath: newReview.fieldPath,
+      priority: newReview.priority,
+      isRead: false,
+      createdAt: 'Just now'
+    };
+    db.insert('notifications', newNotif);
+
+    // Update project approvalStatus to correction_required if not already
+    if (proj) {
+      db.update('projects', proj.id, { approvalStatus: 'correction_required' });
+    }
+  }
+
+  db.logAudit(
+    newReview.reviewerName,
+    'BU Manager',
+    isDraft ? 'Review Draft Saved' : 'Correction Request Sent',
+    'Review Request',
+    newReview.id,
+    `${newReview.section} -> ${newReview.metric}: ${newReview.comment}`
+  );
+
+  res.status(201).json(newReview);
+});
+
+app.put('/api/v1/reviews/:id', (req, res) => {
+  const reviews = db.getTable('review_requests') || [];
+  const existing = reviews.find((r: any) => r.id === req.params.id);
+  if (!existing) return res.status(404).json({ error: 'Review not found' });
+
+  const updated = db.update('review_requests', req.params.id, {
+    ...req.body,
+    updatedAt: new Date().toISOString().replace('T', ' ').substring(0, 16)
+  });
+
+  res.json(updated);
+});
+
+app.post('/api/v1/reviews/:id/send', (req, res) => {
+  const reviews = db.getTable('review_requests') || [];
+  const review = reviews.find((r: any) => r.id === req.params.id);
+  if (!review) return res.status(404).json({ error: 'Review not found' });
+
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+  const updated = db.update('review_requests', req.params.id, {
+    isDraft: false,
+    status: 'CORRECTION_REQUESTED',
+    updatedAt: timestamp
+  });
+
+  // Create notification for Project Manager
+  const notif = {
+    id: `notif-${Date.now()}`,
+    userId: 'usr-1',
+    type: 'CORRECTION_REQUESTED',
+    title: 'Correction Requested',
+    message: review.comment,
+    projectId: review.projectId,
+    projectName: review.projectName,
+    submissionId: review.submissionId,
+    reviewRequestId: review.id,
+    section: review.section,
+    category: review.category,
+    metric: review.metric,
+    fieldPath: review.fieldPath,
+    priority: review.priority,
+    isRead: false,
+    createdAt: 'Just now'
+  };
+  db.insert('notifications', notif);
+
+  // Mark project as correction_required
+  db.update('projects', review.projectId, { approvalStatus: 'correction_required' });
+
+  db.logAudit(
+    review.reviewerName || 'Vikram Malhotra',
+    'BU Manager',
+    'Correction Request Sent',
+    'Review Request',
+    review.id,
+    `Sent correction request for ${review.section} -> ${review.metric}`
+  );
+
+  res.json(updated);
+});
+
+app.post('/api/v1/reviews/bulk-send', (req, res) => {
+  const { submissionId, projectId, reviewerName = 'Vikram Malhotra' } = req.body;
+  const reviews = db.getTable('review_requests') || [];
+  let sentCount = 0;
+
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+
+  reviews.forEach((r: any) => {
+    const match = (submissionId && r.submissionId === submissionId) || (projectId && r.projectId === projectId);
+    if (match && r.isDraft) {
+      r.isDraft = false;
+      r.status = 'CORRECTION_REQUESTED';
+      r.updatedAt = timestamp;
+      sentCount++;
+
+      // Create notification for each
+      db.insert('notifications', {
+        id: `notif-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        userId: 'usr-1',
+        type: 'CORRECTION_REQUESTED',
+        title: `Correction Requested (${r.metric})`,
+        message: r.comment,
+        projectId: r.projectId,
+        projectName: r.projectName,
+        submissionId: r.submissionId,
+        reviewRequestId: r.id,
+        section: r.section,
+        category: r.category,
+        metric: r.metric,
+        fieldPath: r.fieldPath,
+        priority: r.priority,
+        isRead: false,
+        createdAt: 'Just now'
+      });
+    }
+  });
+
+  if (sentCount > 0) {
+    db.setTable('review_requests', reviews);
+    if (projectId) {
+      db.update('projects', projectId, { approvalStatus: 'correction_required' });
+    }
+    db.logAudit(
+      reviewerName,
+      'BU Manager',
+      'Sent Bulk Review Comments',
+      'Submission',
+      submissionId || projectId,
+      `Dispatched ${sentCount} correction requests to Project Manager`
+    );
+  }
+
+  res.json({ success: true, sentCount });
+});
+
+app.post('/api/v1/reviews/:id/respond', (req, res) => {
+  const { id } = req.params;
+  const { response, correctedValue, evidenceName, responderName = 'Rajesh Verma' } = req.body;
+  const reviews = db.getTable('review_requests') || [];
+  const review = reviews.find((r: any) => r.id === id);
+  if (!review) return res.status(404).json({ error: 'Review not found' });
+
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+  const thread = Array.isArray(review.thread) ? [...review.thread] : [];
+
+  thread.push({
+    id: `th-${Date.now()}`,
+    author: responderName,
+    role: 'Project Manager',
+    message: response || 'Corrected data and uploaded supporting verification.',
+    timestamp,
+    type: 'response',
+    attachment: evidenceName
+  });
+
+  // If a correctedValue is provided, update underlying single-source-of-truth data
+  if (correctedValue !== undefined) {
+    if (review.metric === 'Grid Electricity' || review.fieldPath.includes('grid-electricity')) {
+      const numVal = Number(String(correctedValue).replace(/[^0-9.]/g, ''));
+      if (!isNaN(numVal) && numVal > 0) {
+        const envTable = db.getTable('environmental_data') || [];
+        const envItem = envTable.find((e: any) => e.projectId === review.projectId);
+        if (envItem) {
+          envItem.electricityKwh = numVal;
+          db.setTable('environmental_data', envTable);
+        }
+      }
+    } else if (review.metric.includes('Diesel') || review.fieldPath.includes('fuel')) {
+      const numVal = Number(String(correctedValue).replace(/[^0-9.]/g, ''));
+      if (!isNaN(numVal) && numVal > 0) {
+        const envTable = db.getTable('environmental_data') || [];
+        const envItem = envTable.find((e: any) => e.projectId === review.projectId);
+        if (envItem) {
+          envItem.fuelLitres = numVal;
+          db.setTable('environmental_data', envTable);
+        }
+      }
+    }
+  }
+
+  const updated = db.update('review_requests', id, {
+    status: 'CORRECTION_SUBMITTED',
+    currentValue: correctedValue !== undefined ? String(correctedValue) : review.currentValue,
+    thread,
+    updatedAt: timestamp
+  });
+
+  // Notify BU Manager Vikram Malhotra
+  db.insert('notifications', {
+    id: `notif-${Date.now()}`,
+    userId: 'usr-3', // Vikram Malhotra
+    type: 'CORRECTION_SUBMITTED',
+    title: 'Correction Submitted',
+    message: `${responderName} has responded to correction request on ${review.section} → ${review.metric}: "${response}"`,
+    projectId: review.projectId,
+    projectName: review.projectName,
+    submissionId: review.submissionId,
+    reviewRequestId: review.id,
+    section: review.section,
+    category: review.category,
+    metric: review.metric,
+    fieldPath: review.fieldPath,
+    priority: review.priority,
+    isRead: false,
+    createdAt: 'Just now'
+  });
+
+  db.logAudit(
+    responderName,
+    'Project Manager',
+    'Correction Submitted',
+    'Review Request',
+    review.id,
+    `Responded with: ${response}`
+  );
+
+  res.json(updated);
+});
+
+app.post('/api/v1/reviews/:id/resolve', (req, res) => {
+  const { id } = req.params;
+  const { resolutionComment, reviewerName = 'Vikram Malhotra', status = 'RESOLVED' } = req.body;
+  const reviews = db.getTable('review_requests') || [];
+  const review = reviews.find((r: any) => r.id === id);
+  if (!review) return res.status(404).json({ error: 'Review not found' });
+
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 16);
+  const thread = Array.isArray(review.thread) ? [...review.thread] : [];
+
+  thread.push({
+    id: `th-${Date.now()}`,
+    author: reviewerName,
+    role: 'Business Unit Manager',
+    message: resolutionComment || (status === 'APPROVED' ? 'Approved by reviewer.' : 'Correction reviewed and accepted.'),
+    timestamp,
+    type: 'resolution'
+  });
+
+  const updated = db.update('review_requests', id, {
+    status,
+    thread,
+    updatedAt: timestamp,
+    resolvedAt: timestamp
+  });
+
+  // Notify Project Manager
+  db.insert('notifications', {
+    id: `notif-${Date.now()}`,
+    userId: 'usr-1',
+    type: 'REVIEW_RESOLVED',
+    title: `Review Item ${status === 'APPROVED' ? 'Approved' : 'Resolved'}`,
+    message: `${review.section} → ${review.metric} has been marked ${status} by BU Manager ${reviewerName}.`,
+    projectId: review.projectId,
+    projectName: review.projectName,
+    submissionId: review.submissionId,
+    reviewRequestId: review.id,
+    section: review.section,
+    category: review.category,
+    metric: review.metric,
+    fieldPath: review.fieldPath,
+    priority: review.priority,
+    isRead: false,
+    createdAt: 'Just now'
+  });
+
+  db.logAudit(
+    reviewerName,
+    'BU Manager',
+    `Review ${status}`,
+    'Review Request',
+    review.id,
+    `Marked ${review.metric} as ${status}`
+  );
+
+  res.json(updated);
+});
+
+app.delete('/api/v1/reviews/:id', (req, res) => {
+  const deleted = db.delete('review_requests', req.params.id);
+  res.json({ success: !!deleted });
+});
+
+// ==========================================
+// 14. NOTIFICATIONS
+// ==========================================
+app.get('/api/v1/notifications', (req, res) => {
+  const { userId } = req.query;
+  let notifs = db.getTable('notifications') || [];
+  if (userId && userId !== 'all') {
+    notifs = notifs.filter((n: any) => !n.userId || n.userId === userId || userId === 'all');
+  }
+  res.json(notifs);
+});
+
+app.put('/api/v1/notifications/:id/read', (req, res) => {
+  const notifs = db.getTable('notifications') || [];
+  const notif = notifs.find((n: any) => n.id === req.params.id);
+  if (!notif) return res.status(404).json({ error: 'Notification not found' });
+  notif.isRead = true;
+  db.setTable('notifications', notifs);
+  res.json(notif);
+});
+
+app.put('/api/v1/notifications/read-all', (req, res) => {
+  const notifs = db.getTable('notifications') || [];
+  notifs.forEach((n: any) => { n.isRead = true; });
+  db.setTable('notifications', notifs);
+  res.json({ success: true, count: notifs.length });
+});
+
+app.post('/api/v1/notifications', (req, res) => {
+  const newNotif = {
+    id: `notif-${Date.now()}`,
+    ...req.body,
+    isRead: false,
+    createdAt: 'Just now'
+  };
+  db.insert('notifications', newNotif);
+  res.status(201).json(newNotif);
 });
 
 export { app };

@@ -49,7 +49,8 @@ export const BUManagerDashboard: React.FC = () => {
   const validationList = Array.isArray(validations) ? validations : [];
 
   const buProjects = projectList.filter(p => p.businessUnitId === 'bu-1' || p.businessUnitName?.includes('Renewables') || true);
-  const pendingReviews = workflowList.filter(w => w.overallStatus === 'submitted' || w.overallStatus === 'under_review');
+  const submittedProjects = buProjects.filter(p => p.approvalStatus === 'submitted' || p.approvalStatus === 'under_review');
+  const pendingReviewsCount = Math.max(submittedProjects.length, workflowList.filter(w => w.overallStatus === 'submitted' || w.overallStatus === 'under_review').length);
   const correctionProjects = projectList.filter(p => p.approvalStatus === 'correction_required' || p.validationStatus === 'flagged');
   const openValidationAlerts = validationList.filter(v => v.status === 'open');
 
@@ -76,11 +77,11 @@ export const BUManagerDashboard: React.FC = () => {
         <div className="flex items-center gap-2">
           <Button
             variant="primary"
-            onClick={() => navigate('/projects/proj-1/review')}
-            icon={<CheckCircle className="w-4 h-4" />}
+            onClick={() => navigate('/projects')}
+            icon={<Building2 className="w-4 h-4" />}
             className="bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-sm"
           >
-            Review Pending Submission (PRJ-001)
+            All Projects Portfolio
           </Button>
         </div>
       </div>
@@ -95,10 +96,10 @@ export const BUManagerDashboard: React.FC = () => {
         />
         <StatCard
           title="Submissions Pending Review"
-          value={pendingReviews.length.toString()}
+          value={pendingReviewsCount.toString()}
           subtitle="Action needed at Stage 1"
           icon={<Clock className="w-5 h-5 text-amber-600" />}
-          trend={pendingReviews.length > 0 ? 'down' : 'up'}
+          trend={pendingReviewsCount > 0 ? 'down' : 'up'}
         />
         <StatCard
           title="Projects Requiring Correction"
@@ -166,19 +167,11 @@ export const BUManagerDashboard: React.FC = () => {
                       <td className="p-3 text-right">
                         <div className="flex items-center justify-end gap-1.5">
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
                             onClick={() => navigate(`/projects/${p.id}/overview`)}
                           >
                             Inspect
-                          </Button>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={() => navigate(`/projects/${p.id}/review`)}
-                            className="bg-teal-600 hover:bg-teal-700 text-white"
-                          >
-                            Review
                           </Button>
                         </div>
                       </td>
@@ -190,8 +183,58 @@ export const BUManagerDashboard: React.FC = () => {
           </Card>
         </div>
 
-        {/* Validation Alerts in BU */}
+        {/* Right Column: Pending Approvals & Validation Alerts in BU */}
         <div className="space-y-6">
+          {/* Submissions Pending BU Review Queue */}
+          <Card className="border border-emerald-300 dark:border-emerald-800/80 bg-emerald-50/20 dark:bg-emerald-950/10">
+            <CardHeader
+              title="Submissions Awaiting BU Signoff"
+              subtitle="Project ESG disclosures in Stage 1 queue"
+              action={
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-mono">
+                  {submittedProjects.length} Pending
+                </span>
+              }
+            />
+            <div className="p-4 space-y-3">
+              {submittedProjects.length === 0 ? (
+                <div className="text-center py-4 text-xs text-slate-400">
+                  No submissions currently awaiting BU manager signoff.
+                </div>
+              ) : (
+                submittedProjects.map((p) => (
+                  <div key={p.id} className="p-3 rounded-xl border border-emerald-200 dark:border-emerald-800/60 bg-white dark:bg-[#0c1411] space-y-2 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono font-bold text-xs px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-[10px]">
+                          {p.code}
+                        </span>
+                        <span className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate max-w-[150px]">
+                          {p.name}
+                        </span>
+                      </div>
+                      <StatusBadge status="submitted" />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-500">
+                      <span>Lead: {p.leadPerson || 'Project Lead'}</span>
+                      <span className="font-mono text-emerald-600 font-bold">{p.esgCompletion}% Done</span>
+                    </div>
+                    <div className="pt-1 flex items-center justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/projects/${p.id}/overview`)}
+                        className="text-xs w-full sm:w-auto"
+                      >
+                        Inspect Facility
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+
           <Card>
             <CardHeader
               title="Validation Alerts (BU Scope)"

@@ -72,14 +72,6 @@ export const ESGTeamDashboard: React.FC = () => {
           >
             Validation Center ({openValidationAlerts.length})
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/brsr')}
-            icon={<FileSpreadsheet className="w-4 h-4" />}
-            className="bg-white/10 hover:bg-white/20 text-white border-white/20"
-          >
-            BRSR Workspace
-          </Button>
         </div>
       </div>
 

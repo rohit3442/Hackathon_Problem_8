@@ -25,8 +25,11 @@ import { Card, CardHeader } from '../common/Card';
 import { Button } from '../common/Button';
 import { ProgressBar } from '../common/ProgressBar';
 import { StatusBadge } from '../common/StatusBadge';
-import { useQuery } from '@tanstack/react-query';
-import { projectsApi, approvalsApi, validationApi } from '../../api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { projectsApi, approvalsApi, validationApi, esgApi } from '../../api';
+import { useAuth } from '../../context/AuthContext';
+import { useApp } from '../../context/AppContext';
+import confetti from 'canvas-confetti';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -42,6 +45,10 @@ import {
 
 export const ProjectUserDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { addToast } = useApp();
+  const queryClient = useQueryClient();
+  const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
 
   const { data: projects = [], isLoading: loadingProjects } = useQuery({
     queryKey: ['projects'],
@@ -97,11 +104,8 @@ export const ProjectUserDashboard: React.FC = () => {
             Project Contributor Portal
           </div>
           <h2 className="text-xl md:text-2xl font-bold font-heading">
-            Welcome back, Rajesh Verma
+            Welcome back, {user?.name || 'Rajesh Verma'}
           </h2>
-          <p className="text-xs md:text-sm text-emerald-100/90 mt-1 max-w-xl">
-            Assigned Facility: <strong className="text-white">Solar Mega-Park 500MW (SMP-500)</strong> • Reporting Period: <strong className="text-emerald-300">FY 2025-26</strong>
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -151,7 +155,7 @@ export const ProjectUserDashboard: React.FC = () => {
       {/* ==================================================================== */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1: Monthly Energy & Telemetry Trajectory */}
-        <Card className="p-5 space-y-4">
+        <Card className="p-5 space-y-4 min-w-0 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
             <div>
               <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -167,7 +171,7 @@ export const ProjectUserDashboard: React.FC = () => {
             </span>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={telemetryMonthly} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                 <defs>
@@ -202,7 +206,7 @@ export const ProjectUserDashboard: React.FC = () => {
         </Card>
 
         {/* Chart 2: Calculated GHG Footprint Trajectory */}
-        <Card className="p-5 space-y-4">
+        <Card className="p-5 space-y-4 min-w-0 overflow-hidden">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
             <div>
               <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center gap-2">
@@ -218,7 +222,7 @@ export const ProjectUserDashboard: React.FC = () => {
             </span>
           </div>
 
-          <div className="h-64 w-full">
+          <div className="h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={telemetryMonthly} margin={{ top: 10, right: 10, left: -15, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
@@ -323,9 +327,37 @@ export const ProjectUserDashboard: React.FC = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-2 pt-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-2">
+                  {p.approvalStatus === 'draft' ? (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
+                      disabled={isSubmitting === p.id}
+                      onClick={async () => {
+                        setIsSubmitting(p.id);
+                        try {
+                          await esgApi.submitAllESG(p.id, user?.name || 'Rajesh Verma', 'ESG Consolidated');
+                          queryClient.invalidateQueries({ queryKey: ['projects'] });
+                          queryClient.invalidateQueries({ queryKey: ['approvals'] });
+                          queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+                          try {
+                            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+                          } catch (e) {}
+                          addToast('Submission Complete', `ESG report for ${p.name} submitted to BU Manager Vikram Malhotra`, 'success');
+                        } catch (err) {
+                          addToast('Submission Failed', 'Failed to submit report to BU Manager', 'error');
+                        } finally {
+                          setIsSubmitting(null);
+                        }
+                      }}
+                      icon={<Send className="w-3.5 h-3.5" />}
+                    >
+                      {isSubmitting === p.id ? 'Submitting...' : 'Submit to BU Manager'}
+                    </Button>
+                  ) : null}
                   <Button
-                    variant="primary"
+                    variant={p.approvalStatus === 'draft' ? 'outline' : 'primary'}
                     size="sm"
                     className="flex-1 text-xs"
                     onClick={() => navigate(`/projects/${p.id}/esg/environmental`)}
