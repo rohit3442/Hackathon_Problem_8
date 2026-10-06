@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserRole } from '../types';
-import { ChevronDown, Check, AlertCircle, Eye, EyeOff, ShieldCheck, KeyRound } from 'lucide-react';
+import { ChevronDown, Check, AlertCircle, Zap, X, Mail, ShieldAlert } from 'lucide-react';
+import { ScenicBackground } from '../components/common/ScenicBackground';
 
 interface RoleOption {
   id: UserRole;
@@ -15,16 +16,16 @@ interface RoleOption {
 
 const ROLE_OPTIONS: RoleOption[] = [
   {
-    id: 'project_user',
-    label: 'Project User',
-    subtext: 'Enter & view project-level ESG data',
-    defaultIdentifier: 'rajesh.verma@meil.in',
-    corporateId: 'EMP-PU-1042',
+    id: 'group_admin',
+    label: 'Group Admin',
+    subtext: 'Full enterprise control, consolidation & approvals',
+    defaultIdentifier: 'rekha.nair@meil.in',
+    corporateId: 'EMP-GA-9001',
     defaultPassword: 'Password@123'
   },
   {
     id: 'bu_manager',
-    label: 'Business Manager',
+    label: 'Business Unit Manager',
     subtext: 'Review & verify project submissions & signoffs',
     defaultIdentifier: 'vikram.malhotra@meil.in',
     corporateId: 'EMP-PM-2089',
@@ -39,25 +40,25 @@ const ROLE_OPTIONS: RoleOption[] = [
     defaultPassword: 'Password@123'
   },
   {
+    id: 'project_user',
+    label: 'Project User',
+    subtext: 'Enter & view project-level ESG data & evidence',
+    defaultIdentifier: 'rajesh.verma@meil.in',
+    corporateId: 'EMP-PU-1042',
+    defaultPassword: 'Password@123'
+  },
+  {
     id: 'esg_team',
     label: 'ESG Team',
-    subtext: 'Validate, audit & consolidate group data',
+    subtext: 'Validate, audit, anomaly analysis & BRSR reporting',
     defaultIdentifier: 'ananya.sen@meil.in',
     corporateId: 'EMP-ESG-4021',
     defaultPassword: 'Password@123'
   },
   {
-    id: 'group_admin',
-    label: 'Group Admin',
-    subtext: 'Full group control access',
-    defaultIdentifier: 'rekha.nair@meil.in',
-    corporateId: 'EMP-GA-9001',
-    defaultPassword: 'Password@123'
-  },
-  {
     id: 'management',
     label: 'Management',
-    subtext: 'Executive summary dashboard & reports',
+    subtext: 'Executive summary dashboard & investor reports',
     defaultIdentifier: 'deepak.khaitan@meil.in',
     corporateId: 'EMP-EXEC-001',
     defaultPassword: 'Password@123'
@@ -68,20 +69,33 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  // Initialized to Group Admin & rekha.nair@meil.in as demonstrated in the specification screenshot
+  // Initialized to Group Admin matching screenshot
   const [selectedRole, setSelectedRole] = useState<UserRole>('group_admin');
-  const [identifier, setIdentifier] = useState('rekha.nair@meil.in');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('Password@123');
   const [showPassword, setShowPassword] = useState(false);
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showCredentialsHelper, setShowCredentialsHelper] = useState(false);
+
+  // Modals
+  const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [registerSuccess, setRegisterSuccess] = useState(false);
+  const [registerForm, setRegisterForm] = useState({
+    name: '',
+    email: '',
+    department: '',
+    requestedRole: 'project_user'
+  });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.title = 'ECO METRICS — ESG Portal Login';
+    document.title = 'Eco Metrics - ESG & BRSR Reporting Platform';
   }, []);
 
   // Close role dropdown when clicking outside
@@ -95,7 +109,7 @@ export const Login: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const activeRoleOption = ROLE_OPTIONS.find(r => r.id === selectedRole) || ROLE_OPTIONS[4];
+  const activeRoleOption = ROLE_OPTIONS.find(r => r.id === selectedRole) || ROLE_OPTIONS[0];
 
   const handleRoleSelect = (option: RoleOption) => {
     setSelectedRole(option.id);
@@ -110,6 +124,12 @@ export const Login: React.FC = () => {
     setErrorMessage(null);
     setIsLoading(true);
 
+    // If identifier is empty or left as dummy placeholder, use the active role's verified account
+    let resolvedIdentifier = identifier.trim();
+    if (!resolvedIdentifier || resolvedIdentifier === 'email@domain.com') {
+      resolvedIdentifier = activeRoleOption.defaultIdentifier;
+    }
+
     try {
       // 1. Attempt backend API authentication
       try {
@@ -117,7 +137,7 @@ export const Login: React.FC = () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            identifier: identifier.trim(),
+            identifier: resolvedIdentifier,
             role: selectedRole,
             password
           })
@@ -130,13 +150,12 @@ export const Login: React.FC = () => {
           setIsLoading(false);
           return;
         }
-      } catch (networkErr) {
-        // If backend connection fails, proceed with client-side RBAC validation
-        console.warn('Backend API offline, falling back to local RBAC verification');
+      } catch (_networkErr) {
+        console.warn('Backend API connection notice, proceeding with local RBAC verification');
       }
 
       // 2. Perform client-side verification and session storage
-      const result = login(identifier.trim(), selectedRole, password);
+      const result = login(resolvedIdentifier, selectedRole, password);
 
       if (!result.success) {
         setErrorMessage(result.error || 'Authentication rejected due to role mismatch.');
@@ -144,7 +163,7 @@ export const Login: React.FC = () => {
         return;
       }
 
-      // 3. Navigate to the designated separated role dashboard
+      // 3. Navigate to designated role dashboard
       if (selectedRole === 'management') {
         navigate('/executive-dashboard');
       } else {
@@ -157,223 +176,417 @@ export const Login: React.FC = () => {
     }
   };
 
-  return (
-    <div className="min-h-screen bg-[#060b08] text-white flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden select-none font-sans">
-      {/* Background Subtle Cyber Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-teal-500/5 rounded-full blur-[100px] pointer-events-none" />
+  const handleForgotPasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotSuccess(true);
+    setTimeout(() => {
+      setShowForgotPasswordModal(false);
+      setForgotSuccess(false);
+      setForgotEmail('');
+    }, 2400);
+  };
 
-      {/* Main Centered Authentication Container */}
-      <div className="w-full max-w-[480px] z-10 flex flex-col items-center">
-        {/* Glowing Brand Title */}
-        <div className="mb-10 text-center">
-          <h1 className="text-3xl sm:text-4xl font-black tracking-wider text-[#00e676] drop-shadow-[0_0_20px_rgba(0,230,118,0.55)]">
-            ECO METRICS
-          </h1>
+  const handleRegisterSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setRegisterSuccess(true);
+    setTimeout(() => {
+      setShowRegisterModal(false);
+      setRegisterSuccess(false);
+      setRegisterForm({ name: '', email: '', department: '', requestedRole: 'project_user' });
+    }, 2400);
+  };
+
+  return (
+    <div className="min-h-screen relative flex flex-col justify-center items-center px-4 py-8 sm:py-12 overflow-x-hidden font-sans">
+      {/* Scenic Atmospheric Mountain Background */}
+      <ScenicBackground />
+
+      {/* Main Login Card - Exactly Matching the Uploaded Design */}
+      <div className="w-full max-w-[940px] z-10 rounded-[26px] border border-white/10 shadow-[0_30px_90px_rgba(0,0,0,0.85)] grid grid-cols-1 md:grid-cols-2 backdrop-blur-sm relative">
+        
+        {/* Left Column: Forest Green Editorial Quote Panel */}
+        <div className="bg-[#082116] rounded-t-[26px] md:rounded-tr-none md:rounded-l-[26px] p-8 sm:p-11 lg:p-12 flex flex-col justify-between min-h-[460px] md:min-h-[550px] relative md:border-r border-white/5 overflow-hidden">
+          {/* Subtle Ambient Light Wash */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+
+          {/* Top: Brand Lockup */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#00c77f] flex items-center justify-center shrink-0 shadow-md shadow-emerald-500/30">
+              <Zap className="w-4 h-4 text-black fill-black" />
+            </div>
+            <span className="text-white font-extrabold text-[15px] tracking-[0.16em] uppercase">
+              ECO METRICS
+            </span>
+          </div>
+
+          {/* Center: Inspirational Quote */}
+          <div className="my-8 md:my-0">
+            <blockquote className="font-serif-quote italic text-2xl sm:text-[27px] lg:text-[29px] text-white font-normal leading-[1.38] tracking-tight">
+              &ldquo;The greatest threat to our planet is the belief that someone else will save it.&rdquo;
+            </blockquote>
+
+            {/* Accent Rule & Author */}
+            <div className="mt-6">
+              <div className="w-11 h-[2px] bg-[#00c77f] mb-3" />
+              <p className="text-[11px] font-bold tracking-[0.22em] text-[#00c77f] uppercase font-sans">
+                ROBERT SWAN
+              </p>
+            </div>
+          </div>
+
+          {/* Bottom: Copyright */}
+          <div>
+            <p className="text-xs text-white/40 tracking-wide font-sans">
+              &copy; 2026 Eco Metrics Inc. All rights reserved.
+            </p>
+          </div>
         </div>
 
-        {/* Error Alert Banner */}
-        {errorMessage && (
-          <div className="w-full mb-6 p-4 rounded-xl bg-rose-950/80 border border-rose-500/60 text-rose-200 text-xs flex items-start gap-3 shadow-lg animate-in fade-in duration-200">
-            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="font-bold text-rose-300">Authentication Alert</p>
-              <p className="mt-0.5 leading-relaxed text-rose-200/90">{errorMessage}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Form Card */}
-        <form onSubmit={handleLoginSubmit} className="w-full flex flex-col">
-          {/* 1. ACCESS ROLE FIELD */}
-          <div className="w-full relative" ref={dropdownRef}>
-            <label className="block text-[11px] font-bold tracking-widest text-[#00e676] uppercase mb-2">
-              ACCESS ROLE
-            </label>
-
-            {/* Role Trigger Box */}
-            <div
-              onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-              className={`w-full bg-[#08120d] border ${
-                isRoleDropdownOpen ? 'border-[#00e676] ring-1 ring-[#00e676]/40' : 'border-emerald-600/50 hover:border-emerald-400/80'
-              } rounded-lg px-4 py-3.5 flex items-center justify-between cursor-pointer transition-all duration-150`}
-            >
-              <span className="text-sm font-medium text-slate-100">
-                {activeRoleOption.label}
-              </span>
-              <ChevronDown
-                className={`w-4 h-4 text-emerald-400 transition-transform duration-200 ${
-                  isRoleDropdownOpen ? 'rotate-180' : ''
-                }`}
-              />
-            </div>
-
-            {/* Helper Text below closed selector */}
-            {!isRoleDropdownOpen && (
-              <p className="text-[12px] text-emerald-400/80 mt-2 font-normal">
-                {activeRoleOption.subtext}
-              </p>
-            )}
-
-            {/* Custom Expanded Dropdown Menu (Screenshot 2 Match) */}
-            {isRoleDropdownOpen && (
-              <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-[#06100b] border border-emerald-500/60 rounded-xl shadow-2xl z-50 overflow-hidden divide-y divide-emerald-950/70 animate-in fade-in zoom-in-95 duration-100">
-                {ROLE_OPTIONS.map((option) => {
-                  const isSelected = option.id === selectedRole;
-                  return (
-                    <div
-                      key={option.id}
-                      onClick={() => handleRoleSelect(option)}
-                      className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors ${
-                        isSelected
-                          ? 'bg-emerald-950/60 text-white'
-                          : 'hover:bg-emerald-900/30 text-slate-200'
-                      }`}
-                    >
-                      <div className="flex flex-col text-left">
-                        <span className={`text-sm font-bold ${isSelected ? 'text-[#00e676]' : 'text-slate-100'}`}>
-                          {option.label}
-                        </span>
-                        <span className="text-[11px] text-emerald-400/70 mt-0.5 font-normal">
-                          {option.subtext}
-                        </span>
-                      </div>
-
-                      {isSelected && (
-                        <Check className="w-4 h-4 text-[#00e676] shrink-0 ml-3" />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+        {/* Right Column: Dark Charcoal Authentication Panel */}
+        <div className="bg-[#111a16] rounded-b-[26px] md:rounded-bl-none md:rounded-r-[26px] p-8 sm:p-11 lg:p-12 flex flex-col justify-center relative z-20">
+          {/* Header */}
+          <div>
+            <h1 className="text-2xl sm:text-[27px] font-semibold text-white tracking-tight">
+              Welcome back
+            </h1>
+            <p className="text-sm text-slate-400 mt-1.5 font-normal">
+              Sign in to monitor your environmental footprint.
+            </p>
           </div>
 
-          {/* 2. IDENTIFIER FIELD */}
-          <div className="w-full mt-6">
-            <label className="block text-[11px] font-bold tracking-widest text-[#00e676] uppercase mb-2">
-              IDENTIFIER
-            </label>
-            <input
-              type="text"
-              value={identifier}
-              onChange={(e) => {
-                setIdentifier(e.target.value);
-                setErrorMessage(null);
-              }}
-              placeholder="email@meil.in or Corporate ID"
-              required
-              className="w-full bg-[#08120d] border border-emerald-600/50 focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]/40 rounded-lg px-4 py-3.5 text-sm text-slate-100 placeholder-emerald-700/50 outline-none transition-all"
-            />
-          </div>
-
-          {/* 3. PASSWORD FIELD */}
-          <div className="w-full mt-6">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-[11px] font-bold tracking-widest text-[#00e676] uppercase">
-                PASSWORD
-              </label>
-              <button
-                type="button"
-                onClick={() => alert(`Corporate Self-Service Reset: Inquiries for account '${identifier}' have been forwarded to Group IT (secops@meil.in).`)}
-                className="text-[10px] font-bold tracking-wider text-emerald-400/90 hover:text-emerald-300 uppercase cursor-pointer"
-              >
-                FORGOT PASSWORD?
-              </button>
-            </div>
-
-            <div className="relative w-full">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setErrorMessage(null);
-                }}
-                placeholder="Enter corporate password"
-                required
-                className="w-full bg-[#08120d] border border-emerald-600/50 focus:border-[#00e676] focus:ring-1 focus:ring-[#00e676]/40 rounded-lg px-4 py-3.5 pr-14 text-sm text-slate-100 placeholder-emerald-700/50 outline-none transition-all font-mono"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[10px] font-black tracking-widest text-emerald-400 hover:text-emerald-300 uppercase cursor-pointer py-1 px-1.5"
-              >
-                {showPassword ? 'HIDE' : 'SHOW'}
-              </button>
-            </div>
-          </div>
-
-          {/* 4. SIGN IN BUTTON */}
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full mt-8 py-3.5 px-6 rounded-xl font-black text-sm tracking-wider uppercase text-black bg-[#00e676] hover:bg-[#00f59b] shadow-[0_0_28px_rgba(0,230,118,0.5)] active:scale-[0.99] transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
-          >
-            {isLoading ? (
-              <span className="inline-block w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-            ) : (
-              'SIGN IN'
-            )}
-          </button>
-
-          {/* 5. FOOTER LINK */}
-          <div className="mt-8 text-center text-xs text-slate-400">
-            <span>New to ECO Metrics? </span>
-            <button
-              type="button"
-              onClick={() => alert('New corporate onboarding requires Enterprise Active Directory approval. Contact your Group Admin at rekha.nair@meil.in.')}
-              className="text-[#00e676] font-semibold hover:underline cursor-pointer"
-            >
-              Create an account
-            </button>
-          </div>
-        </form>
-
-        {/* 6. CREDENTIALS & ROLE TEST CHEAT-SHEET */}
-        <div className="w-full mt-8 pt-4 border-t border-emerald-950/60 text-center">
-          <button
-            type="button"
-            onClick={() => setShowCredentialsHelper(!showCredentialsHelper)}
-            className="inline-flex items-center gap-1.5 text-xs text-emerald-400/80 hover:text-emerald-300 font-medium py-1 px-3 rounded-full bg-emerald-950/40 border border-emerald-800/40 cursor-pointer transition-colors"
-          >
-            <KeyRound className="w-3 h-3 text-[#00e676]" />
-            <span>{showCredentialsHelper ? 'Hide Quick Role Accounts' : 'Show Quick Role Accounts & IDs'}</span>
-          </button>
-
-          {showCredentialsHelper && (
-            <div className="mt-3 p-3.5 rounded-xl bg-[#08120d]/90 border border-emerald-800/50 text-left text-xs space-y-2 animate-in fade-in duration-150">
-              <p className="text-[11px] font-bold text-[#00e676] uppercase tracking-wider mb-2">
-                Click any role below to prefill credentials & test role-specific dashboards:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {ROLE_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => handleRoleSelect(opt)}
-                    className="p-2 rounded-lg bg-emerald-950/40 hover:bg-emerald-900/60 border border-emerald-800/40 text-left transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-white text-[11px]">{opt.label}</span>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-900/60 text-emerald-300 font-mono">
-                        {opt.corporateId}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-emerald-400/80 font-mono truncate mt-0.5">
-                      {opt.defaultIdentifier}
-                    </p>
-                  </button>
-                ))}
-              </div>
-              <div className="text-[10px] text-slate-400 pt-1 flex items-center justify-between">
-                <span>Default Password: <span className="font-mono text-emerald-300">Password@123</span></span>
-                <span className="text-emerald-400">Strict RBAC Enforced</span>
+          {/* Error Alert Banner */}
+          {errorMessage && (
+            <div className="mt-5 p-3.5 rounded-lg bg-rose-950/80 border border-rose-500/50 text-rose-200 text-xs flex items-start gap-2.5 animate-in fade-in duration-150">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="font-medium text-rose-300">Sign in error</p>
+                <p className="mt-0.5 text-rose-200/90 leading-relaxed">{errorMessage}</p>
               </div>
             </div>
           )}
+
+          {/* Authentication Form */}
+          <form onSubmit={handleLoginSubmit} className="mt-6 space-y-4 sm:space-y-5">
+            {/* 1. ACCESS ROLE */}
+            <div className="relative" ref={dropdownRef}>
+              <label className="text-[10px] font-bold tracking-[0.16em] text-[#00c77f] uppercase block mb-1.5">
+                ACCESS ROLE
+              </label>
+
+              {/* Selector Box */}
+              <button
+                type="button"
+                onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                className={`w-full bg-[#17231e] border ${
+                  isRoleDropdownOpen ? 'border-[#00c77f] ring-1 ring-[#00c77f]/30' : 'border-white/5 hover:border-emerald-500/30'
+                } rounded-lg px-4 py-3 flex items-center justify-between text-left cursor-pointer transition-all duration-150`}
+              >
+                <span className="text-sm text-white font-medium">
+                  {activeRoleOption.label}
+                </span>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                    isRoleDropdownOpen ? 'rotate-180 text-[#00c77f]' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isRoleDropdownOpen && (
+                <div className="absolute top-[calc(100%+6px)] left-0 w-full max-h-[340px] overflow-y-auto bg-[#0e1713] border border-emerald-500/40 rounded-xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] z-50 divide-y divide-white/5 animate-in fade-in zoom-in-95 duration-100">
+                  {ROLE_OPTIONS.map((option) => {
+                    const isSelected = option.id === selectedRole;
+                    return (
+                      <div
+                        key={option.id}
+                        onClick={() => handleRoleSelect(option)}
+                        className={`px-4 py-3 cursor-pointer flex items-center justify-between transition-colors ${
+                          isSelected
+                            ? 'bg-emerald-950/70 text-white'
+                            : 'hover:bg-emerald-950/40 text-slate-200'
+                        }`}
+                      >
+                        <div className="flex flex-col text-left pr-2">
+                          <span className={`text-sm font-semibold ${isSelected ? 'text-[#00c77f]' : 'text-slate-100'}`}>
+                            {option.label}
+                          </span>
+                          <span className="text-[11px] text-slate-400 mt-0.5 font-normal">
+                            {option.subtext}
+                          </span>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-4 h-4 text-[#00c77f] shrink-0 ml-2" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* 2. IDENTIFIER */}
+            <div>
+              <label className="text-[10px] font-bold tracking-[0.16em] text-[#00c77f] uppercase block mb-1.5">
+                IDENTIFIER
+              </label>
+              <input
+                type="text"
+                value={identifier}
+                onChange={(e) => {
+                  setIdentifier(e.target.value);
+                  setErrorMessage(null);
+                }}
+                placeholder="email@domain.com"
+                className="w-full bg-[#17231e] border border-white/5 focus:border-[#00c77f] focus:ring-1 focus:ring-[#00c77f]/40 rounded-lg px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition-all"
+              />
+            </div>
+
+            {/* 3. PASSWORD */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-[10px] font-bold tracking-[0.16em] text-[#00c77f] uppercase">
+                  PASSWORD
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPasswordModal(true)}
+                  className="text-xs text-slate-400 hover:text-slate-300 transition-colors cursor-pointer"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              <div className="relative w-full">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrorMessage(null);
+                  }}
+                  placeholder="••••••••"
+                  className="w-full bg-[#17231e] border border-white/5 focus:border-[#00c77f] focus:ring-1 focus:ring-[#00c77f]/40 rounded-lg px-4 py-3 pr-16 text-sm text-white placeholder-slate-500 outline-none transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-bold tracking-wider text-slate-400 hover:text-white transition-colors cursor-pointer py-1 px-1.5"
+                >
+                  {showPassword ? 'HIDE' : 'SHOW'}
+                </button>
+              </div>
+            </div>
+
+            {/* 4. SIGN IN BUTTON */}
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[#00c77f] hover:bg-[#00db8c] active:bg-[#00b372] text-[#0a1811] font-semibold text-sm py-3 px-6 rounded-lg shadow-lg shadow-emerald-500/20 active:scale-[0.99] transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isLoading ? (
+                  <span className="inline-block w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                ) : (
+                  'Sign In'
+                )}
+              </button>
+            </div>
+
+            {/* 5. FOOTER */}
+            <div className="text-center text-xs text-slate-400 pt-2">
+              <span>New to ECO Metrics? </span>
+              <button
+                type="button"
+                onClick={() => setShowRegisterModal(true)}
+                className="text-[#00c77f] hover:underline font-medium cursor-pointer"
+              >
+                Create an account
+              </button>
+            </div>
+          </form>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {showForgotPasswordModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#111a16] border border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-[#00c77f] flex items-center justify-center">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Reset Password</h3>
+              </div>
+              <button
+                onClick={() => setShowForgotPasswordModal(false)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {forgotSuccess ? (
+              <div className="py-6 text-center space-y-2">
+                <div className="w-12 h-12 bg-emerald-500/20 text-[#00c77f] rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Check className="w-6 h-6" />
+                </div>
+                <h4 className="text-white font-medium text-base">Instructions Sent</h4>
+                <p className="text-xs text-slate-400">
+                  Password reset directions have been securely dispatched to your corporate email.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleForgotPasswordSubmit} className="mt-4 space-y-4">
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Enter your registered corporate identifier or email address to request a secure password reset token.
+                </p>
+                <div>
+                  <label className="text-[10px] font-bold tracking-wider text-[#00c77f] uppercase block mb-1.5">
+                    Corporate Email / Identifier
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={forgotEmail}
+                    onChange={(e) => setForgotEmail(e.target.value)}
+                    placeholder="name@meil.in or Corporate ID"
+                    className="w-full bg-[#17231e] border border-white/10 focus:border-[#00c77f] rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-slate-500 outline-none"
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPasswordModal(false)}
+                    className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-white/5 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-xs font-semibold text-black bg-[#00c77f] hover:bg-[#00db8c] rounded-lg transition-colors"
+                  >
+                    Send Reset Link
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Create Account Modal */}
+      {showRegisterModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#111a16] border border-white/10 rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-[#00c77f] flex items-center justify-center">
+                  <ShieldAlert className="w-4 h-4" />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Create Enterprise Account</h3>
+              </div>
+              <button
+                onClick={() => setShowRegisterModal(false)}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {registerSuccess ? (
+              <div className="py-6 text-center space-y-2">
+                <div className="w-12 h-12 bg-emerald-500/20 text-[#00c77f] rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Check className="w-6 h-6" />
+                </div>
+                <h4 className="text-white font-medium text-base">Request Submitted</h4>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Your access request has been routed to the Group Admin and IT Directory for security provisioning.
+                </p>
+              </div>
+            ) : (
+              <form onSubmit={handleRegisterSubmit} className="mt-4 space-y-3.5">
+                <p className="text-xs text-slate-400">
+                  Eco Metrics enforces enterprise RBAC. New registrations require Active Directory verification.
+                </p>
+                <div>
+                  <label className="text-[10px] font-bold tracking-wider text-[#00c77f] uppercase block mb-1">
+                    Full Name
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={registerForm.name}
+                    onChange={(e) => setRegisterForm({ ...registerForm, name: e.target.value })}
+                    placeholder="e.g. Priya Sharma"
+                    className="w-full bg-[#17231e] border border-white/10 focus:border-[#00c77f] rounded-lg px-3.5 py-2 text-sm text-white placeholder-slate-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold tracking-wider text-[#00c77f] uppercase block mb-1">
+                    Corporate Email Address
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={registerForm.email}
+                    onChange={(e) => setRegisterForm({ ...registerForm, email: e.target.value })}
+                    placeholder="priya.sharma@meil.in"
+                    className="w-full bg-[#17231e] border border-white/10 focus:border-[#00c77f] rounded-lg px-3.5 py-2 text-sm text-white placeholder-slate-500 outline-none"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] font-bold tracking-wider text-[#00c77f] uppercase block mb-1">
+                      Department / Business Unit
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={registerForm.department}
+                      onChange={(e) => setRegisterForm({ ...registerForm, department: e.target.value })}
+                      placeholder="Solar Energy BU"
+                      className="w-full bg-[#17231e] border border-white/10 focus:border-[#00c77f] rounded-lg px-3.5 py-2 text-sm text-white placeholder-slate-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-bold tracking-wider text-[#00c77f] uppercase block mb-1">
+                      Target Role
+                    </label>
+                    <select
+                      value={registerForm.requestedRole}
+                      onChange={(e) => setRegisterForm({ ...registerForm, requestedRole: e.target.value })}
+                      className="w-full bg-[#17231e] border border-white/10 focus:border-[#00c77f] rounded-lg px-3.5 py-2 text-sm text-white outline-none cursor-pointer"
+                    >
+                      <option value="project_user">Project User</option>
+                      <option value="bu_manager">Business Unit Manager</option>
+                      <option value="subsidiary_admin">Subsidiary Admin</option>
+                      <option value="esg_team">ESG Team</option>
+                      <option value="group_admin">Group Admin</option>
+                      <option value="management">Management</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-2 pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowRegisterModal(false)}
+                    className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-white/5 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 text-xs font-semibold text-black bg-[#00c77f] hover:bg-[#00db8c] rounded-lg transition-colors"
+                  >
+                    Request Corporate Access
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

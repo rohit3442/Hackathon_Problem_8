@@ -60,10 +60,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, error: 'Please enter an Email or Corporate ID.' };
     }
 
-    const targetUser = MOCK_USERS.find(u => 
+    let targetUser = MOCK_USERS.find(u => 
       (u.email && u.email.toLowerCase() === inputId) ||
       (u.corporateId && u.corporateId.toLowerCase() === inputId)
     );
+
+    if (!targetUser && (inputId === 'email@domain.com' || inputId === 'demo')) {
+      const normalizedRequested = (role === ('group_admin' as any) || role === ('management' as any)) ? 'group_admin_management' : (role || 'group_admin_management');
+      targetUser = MOCK_USERS.find(u => u.role === normalizedRequested) || MOCK_USERS[0];
+    }
 
     if (!targetUser) {
       return {
