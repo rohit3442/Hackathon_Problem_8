@@ -16,7 +16,8 @@ import {
   FileEdit,
   CheckCircle2,
   Sparkles,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
 import { DataTable, Column } from '../components/common/DataTable';
 import { Button } from '../components/common/Button';
@@ -27,6 +28,7 @@ import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectsApi, organizationApi } from '../api';
+import { exportSubmittedDataPDF } from '../utils/pdfExport';
 
 export const Projects: React.FC = () => {
   const navigate = useNavigate();
@@ -182,6 +184,35 @@ export const Projects: React.FC = () => {
           >
             Overview
           </Button>
+
+          {row.approvalStatus !== 'draft' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                try {
+                  exportSubmittedDataPDF({
+                    project: row,
+                    envData: row.environmentalData,
+                    socData: row.socialData,
+                    govData: row.governanceData,
+                    submittedBy: user?.name || row.leadPerson || 'Rajesh Verma (Project Manager)',
+                    submittedTo: 'Vikram Malhotra (BU Manager)',
+                    submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                  });
+                  addToast('Download Complete', `Downloaded submitted data PDF for ${row.code}`, 'success');
+                } catch (err: any) {
+                  addToast('Download Failed', 'Could not generate PDF receipt', 'error');
+                }
+              }}
+              icon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+              className="border-emerald-500/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs"
+              title="Download Submitted Data (PDF)"
+            >
+              PDF
+            </Button>
+          )}
 
           {role === 'bu_manager' ? (
             <Button

@@ -108,6 +108,10 @@ export interface ProjectEntity {
   leadPerson: string;
   reportingYear?: string;
   description?: string;
+  environmentalData?: any;
+  socialData?: any;
+  governanceData?: any;
+  workflows?: any[];
 }
 
 export type ReviewItemStatus = 

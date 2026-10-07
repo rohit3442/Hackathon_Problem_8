@@ -18,17 +18,20 @@ import {
   ShieldCheck,
   Send,
   Calendar,
-  Layers
+  Layers,
+  Download
 } from 'lucide-react';
 import { StatCard } from '../common/StatCard';
 import { Card, CardHeader } from '../common/Card';
 import { Button } from '../common/Button';
 import { ProgressBar } from '../common/ProgressBar';
 import { StatusBadge } from '../common/StatusBadge';
+import { Modal } from '../common/Modal';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { projectsApi, approvalsApi, validationApi, esgApi } from '../../api';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
+import { exportSubmittedDataPDF } from '../../utils/pdfExport';
 import confetti from 'canvas-confetti';
 import {
   ResponsiveContainer,
@@ -49,6 +52,7 @@ export const ProjectUserDashboard: React.FC = () => {
   const { addToast } = useApp();
   const queryClient = useQueryClient();
   const [isSubmitting, setIsSubmitting] = useState<string | null>(null);
+  const [submittedProjectForModal, setSubmittedProjectForModal] = useState<any>(null);
 
   const { data: projects = [], isLoading: loadingProjects } = useQuery({
     queryKey: ['projects'],
@@ -345,6 +349,10 @@ export const ProjectUserDashboard: React.FC = () => {
                             confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
                           } catch (e) {}
                           addToast('Submission Complete', `ESG report for ${p.name} submitted to BU Manager Vikram Malhotra`, 'success');
+                          setSubmittedProjectForModal({
+                            ...p,
+                            approvalStatus: 'submitted'
+                          });
                         } catch (err) {
                           addToast('Submission Failed', 'Failed to submit report to BU Manager', 'error');
                         } finally {
@@ -355,7 +363,32 @@ export const ProjectUserDashboard: React.FC = () => {
                     >
                       {isSubmitting === p.id ? 'Submitting...' : 'Submit to BU Manager'}
                     </Button>
-                  ) : null}
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+                      onClick={() => {
+                        try {
+                          exportSubmittedDataPDF({
+                            project: p,
+                            envData: p.environmentalData,
+                            socData: p.socialData,
+                            govData: p.governanceData,
+                            submittedBy: user?.name || p.leadPerson || 'Rajesh Verma (Project Manager)',
+                            submittedTo: 'Vikram Malhotra (BU Manager)',
+                            submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                          });
+                          addToast('Download Complete', `Downloaded submitted data PDF for ${p.code}`, 'success');
+                        } catch (e: any) {
+                          addToast('Download Failed', 'Could not generate PDF receipt', 'error');
+                        }
+                      }}
+                      icon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+                    >
+                      Download PDF
+                    </Button>
+                  )}
                   <Button
                     variant={p.approvalStatus === 'draft' ? 'outline' : 'primary'}
                     size="sm"
@@ -400,6 +433,91 @@ export const ProjectUserDashboard: React.FC = () => {
           </Card>
         ))}
       </div>
+
+      {/* Submission Success & PDF Download Modal */}
+      <Modal
+        isOpen={!!submittedProjectForModal}
+        onClose={() => setSubmittedProjectForModal(null)}
+        title="Project Submitted to BU Manager"
+      >
+        <div className="space-y-4 text-xs">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-emerald-500/5 border border-emerald-500/30 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                  Data Successfully Transferred to BU
+                </h4>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  Stage 2 Review
+                </span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300">
+                Disclosures and telemetry for <strong>{submittedProjectForModal?.name} ({submittedProjectForModal?.code})</strong> have been submitted to Business Unit Manager <strong>Vikram Malhotra</strong>.
+              </p>
+            </div>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 space-y-1.5">
+            <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+              <span className="font-semibold">Recipient:</span>
+              <span>Vikram Malhotra (BU Manager)</span>
+            </div>
+            <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+              <span className="font-semibold">Business Unit:</span>
+              <span>{submittedProjectForModal?.businessUnitName || 'Renewables & Power Transmission'}</span>
+            </div>
+            <div className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+              <span className="font-semibold">Attestation:</span>
+              <span className="text-emerald-600 font-semibold">ISO 14064 Verified</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-2.5">
+            <Download className="w-4 h-4 text-emerald-600 shrink-0" />
+            <p className="text-[11px] text-emerald-900 dark:text-emerald-200">
+              Download the official PDF submission receipt for your records and audit trails.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setSubmittedProjectForModal(null)}
+              className="w-full sm:w-auto"
+            >
+              Close
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                try {
+                  exportSubmittedDataPDF({
+                    project: submittedProjectForModal,
+                    envData: submittedProjectForModal?.environmentalData,
+                    socData: submittedProjectForModal?.socialData,
+                    govData: submittedProjectForModal?.governanceData,
+                    submittedBy: user?.name || submittedProjectForModal?.leadPerson || 'Rajesh Verma (Project Manager)',
+                    submittedTo: 'Vikram Malhotra (BU Manager)',
+                    submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                  });
+                  addToast('Download Complete', `Downloaded submitted data PDF for ${submittedProjectForModal?.code}`, 'success');
+                } catch (e: any) {
+                  addToast('Download Failed', 'Could not generate PDF receipt', 'error');
+                }
+              }}
+              icon={<Download className="w-4 h-4" />}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold w-full sm:w-auto shadow-sm"
+            >
+              Download Submitted Data (PDF)
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

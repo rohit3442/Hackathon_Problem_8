@@ -24,7 +24,8 @@ import {
   HelpCircle,
   FileCheck2,
   Lock,
-  Layers
+  Layers,
+  Download
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Card, CardHeader } from '../components/common/Card';
@@ -36,6 +37,7 @@ import { projectsApi, reviewsApi, approvalsApi } from '../api';
 import { canActOnStage } from '../utils/workflow';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
+import { exportSubmittedDataPDF } from '../utils/pdfExport';
 import { ReviewRequest, ReviewThreadMessage } from '../types';
 
 export const ReviewSubmissionDetail: React.FC = () => {
@@ -765,6 +767,31 @@ export const ReviewSubmissionDetail: React.FC = () => {
               Review Draft ({draftReviews.length})
             </Button>
           )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              try {
+                exportSubmittedDataPDF({
+                  project: proj,
+                  envData: project?.environmentalData,
+                  socData: project?.socialData,
+                  govData: project?.governanceData,
+                  submittedBy: proj.leadPerson || 'Rajesh Verma (Project Manager)',
+                  submittedTo: 'Vikram Malhotra (BU Manager)',
+                  submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                });
+                addToast('Download Complete', `Downloaded submitted data PDF for ${proj.code}`, 'success');
+              } catch (e: any) {
+                addToast('Download Failed', 'Could not generate PDF receipt', 'error');
+              }
+            }}
+            icon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+            className="border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs font-medium"
+          >
+            Download Submitted PDF
+          </Button>
 
           <Button
             variant="primary"

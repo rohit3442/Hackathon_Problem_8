@@ -74,14 +74,30 @@ export const BUManagerDashboard: React.FC = () => {
             Logged in as <strong>Vikram Malhotra</strong>. Review incoming project ESG data entries, conduct variance comparisons, request corrections, and approve unit-level submissions before subsidiary signoff.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="primary"
+            onClick={() => navigate('/review-center')}
+            icon={<FileCheck2 className="w-4 h-4" />}
+            className="bg-teal-500 hover:bg-teal-600 text-white border-0 shadow-sm text-xs"
+          >
+            Review Center ({pendingReviewsCount})
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/correction-requests')}
+            icon={<AlertTriangle className="w-4 h-4 text-amber-400" />}
+            className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs"
+          >
+            Correction Requests ({correctionProjects.length})
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => navigate('/projects')}
             icon={<Building2 className="w-4 h-4" />}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white border-0 shadow-sm"
+            className="bg-white/10 hover:bg-white/20 text-white border-white/20 text-xs"
           >
-            All Projects Portfolio
+            All Projects
           </Button>
         </div>
       </div>
@@ -93,19 +109,25 @@ export const BUManagerDashboard: React.FC = () => {
           value={buProjects.length.toString()}
           subtitle="Operational facilities monitored"
           icon={<FolderKanban className="w-5 h-5 text-teal-600" />}
+          onClick={() => navigate('/projects')}
+          className="cursor-pointer hover:border-teal-400 transition-all"
         />
         <StatCard
           title="Submissions Pending Review"
           value={pendingReviewsCount.toString()}
-          subtitle="Action needed at Stage 1"
+          subtitle="Click to open Review Center"
           icon={<Clock className="w-5 h-5 text-amber-600" />}
           trend={pendingReviewsCount > 0 ? 'down' : 'up'}
+          onClick={() => navigate('/review-center')}
+          className="cursor-pointer hover:border-teal-400 transition-all border-l-4 border-l-teal-500"
         />
         <StatCard
           title="Projects Requiring Correction"
           value={correctionProjects.length.toString()}
-          subtitle="Re-opened for project teams"
+          subtitle="Click to view correction items"
           icon={<AlertTriangle className="w-5 h-5 text-rose-600" />}
+          onClick={() => navigate('/correction-requests')}
+          className="cursor-pointer hover:border-amber-400 transition-all border-l-4 border-l-amber-500"
         />
         <StatCard
           title="BU ESG Completion"
@@ -191,9 +213,15 @@ export const BUManagerDashboard: React.FC = () => {
               title="Submissions Awaiting BU Signoff"
               subtitle="Project ESG disclosures in Stage 1 queue"
               action={
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 font-mono">
-                  {submittedProjects.length} Pending
-                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/review-center')}
+                  icon={<FileCheck2 className="w-3.5 h-3.5 text-teal-600" />}
+                  className="text-xs"
+                >
+                  Review Center
+                </Button>
               }
             />
             <div className="p-4 space-y-3">
@@ -219,14 +247,23 @@ export const BUManagerDashboard: React.FC = () => {
                       <span>Lead: {p.leadPerson || 'Project Lead'}</span>
                       <span className="font-mono text-emerald-600 font-bold">{p.esgCompletion}% Done</span>
                     </div>
-                    <div className="pt-1 flex items-center justify-end">
+                    <div className="pt-1 flex items-center justify-end gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => navigate(`/projects/${p.id}/overview`)}
-                        className="text-xs w-full sm:w-auto"
+                        className="text-xs"
                       >
-                        Inspect Facility
+                        Facility
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => navigate(`/review-center/${p.id}`)}
+                        className="text-xs bg-teal-600 hover:bg-teal-700 text-white"
+                        icon={<FileCheck2 className="w-3.5 h-3.5" />}
+                      >
+                        Review Disclosures
                       </Button>
                     </div>
                   </div>

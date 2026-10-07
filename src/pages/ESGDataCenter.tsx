@@ -13,7 +13,8 @@ import {
   TrendingDown, 
   TrendingUp,
   Search,
-  ExternalLink
+  ExternalLink,
+  Download
 } from 'lucide-react';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -26,6 +27,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { esgApi, projectsApi } from '../api';
 import { ESGMetricItem } from '../types';
 import { MOCK_PROJECTS } from '../services/mockData';
+import { exportSubmittedDataPDF } from '../utils/pdfExport';
 import confetti from 'canvas-confetti';
 
 export const ESGDataCenter: React.FC = () => {
@@ -166,6 +168,31 @@ export const ESGDataCenter: React.FC = () => {
             className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
           >
             Submit All to BU Manager
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              const activeProjObj = projects.find(p => p.code === selectedProject) || projects[0];
+              try {
+                exportSubmittedDataPDF({
+                  project: activeProjObj,
+                  envData: activeProjObj.environmentalData,
+                  socData: activeProjObj.socialData,
+                  govData: activeProjObj.governanceData,
+                  submittedBy: user?.name || activeProjObj.leadPerson || 'Rajesh Verma (Project Manager)',
+                  submittedTo: 'Vikram Malhotra (BU Manager)',
+                  submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+                });
+                addToast('Download Complete', `Downloaded submitted data PDF for ${activeProjObj.code}`, 'success');
+              } catch (e: any) {
+                addToast('Download Failed', 'Could not generate PDF receipt', 'error');
+              }
+            }}
+            icon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+            className="border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs"
+          >
+            Download Submitted PDF
           </Button>
         </div>
       </div>
