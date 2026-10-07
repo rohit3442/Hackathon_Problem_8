@@ -63,6 +63,7 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       case 'subsidiary_admin': return { label: 'Subsidiary Admin', color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300' };
       case 'esg_team': return { label: 'Group ESG Team', color: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' };
       case 'group_admin': return { label: 'Group Admin', color: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' };
+      case 'group_admin_management': return { label: 'Group Admin & Management', color: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' };
       case 'management': return { label: 'Executive Board', color: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' };
       default: return { label: 'Enterprise User', color: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300' };
     }

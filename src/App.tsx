@@ -42,6 +42,7 @@ import { ApprovalDetail } from './pages/ApprovalDetail';
 import { ReviewCenter } from './pages/ReviewCenter';
 import { ReviewSubmissionDetail } from './pages/ReviewSubmissionDetail';
 import { CorrectionRequests } from './pages/CorrectionRequests';
+import { Consolidation } from './pages/Consolidation';
 
 // Analytics, SDGs, Reports, Audit
 import { Analytics } from './pages/Analytics';
@@ -123,7 +124,7 @@ export const App: React.FC = () => {
                   <Route path="reviews" element={<ReviewCenter />} />
                   <Route path="reviews/:submissionId" element={<ReviewSubmissionDetail />} />
                   <Route path="correction-requests" element={<CorrectionRequests />} />
-                  <Route path="consolidation" element={<Analytics />} />
+                  <Route path="consolidation" element={<Consolidation />} />
 
                   {/* Analytics & Outputs */}
                   <Route path="analytics" element={<Analytics />} />

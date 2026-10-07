@@ -26,6 +26,9 @@ export type SubmissionStatus =
   | 'draft'
   | 'submitted'
   | 'under_review'
+  | 'under_subsidiary_review'
+  | 'under_esg_review'
+  | 'under_management_review'
   | 'correction_required'
   | 'validated'
   | 'approved'
@@ -57,6 +60,7 @@ export interface ApprovalStep {
   level?: 'project' | 'bu' | 'subsidiary' | 'esg_team' | 'group_admin_management' | 'final' | string;
   label: string;
   roleKey?: string;
+  role?: string;
   assignedRole?: UserRole | string;
   status: 'pending' | 'in_progress' | 'approved' | 'rejected' | 'skipped' | string;
   actionBy?: string;

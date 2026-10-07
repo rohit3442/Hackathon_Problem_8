@@ -841,6 +841,20 @@ app.post('/api/v1/approvals/:id/action', (req, res) => {
 
   if (!wf) return res.status(404).json({ error: 'Workflow not found' });
 
+  if (wf.overallStatus === 'approved') {
+    return res.status(409).json({ error: 'Workflow already has final approval' });
+  }
+  if (wf.overallStatus === 'correction_required' || wf.overallStatus === 'draft' || !(wf.currentStepIndex >= 1)) {
+    return res.status(409).json({ error: 'Workflow is awaiting project user (re)submission' });
+  }
+  const actorRole = req.body?.actorRole === 'group_admin' || req.body?.actorRole === 'management'
+    ? 'group_admin_management'
+    : req.body?.actorRole;
+  const expectedRole = wf.steps?.[wf.currentStepIndex]?.role;
+  if (actorRole && expectedRole && actorRole !== expectedRole) {
+    return res.status(403).json({ error: `This stage must be actioned by ${expectedRole}` });
+  }
+
   const currentIdx = wf.currentStepIndex;
   const steps = [...wf.steps];
 
@@ -869,6 +883,9 @@ app.post('/api/v1/approvals/:id/action', (req, res) => {
     } else if (currentIdx === 2) {
       // Step 2: Subsidiary Admin validated -> Forwarded to ESG Team
       targetOverallStatus = 'under_esg_review';
+    } else if (currentIdx === 3) {
+      // Step 3: ESG Team validated -> Forwarded to Group Admin & Management
+      targetOverallStatus = 'under_management_review';
     } else {
       targetOverallStatus = 'under_review';
     }

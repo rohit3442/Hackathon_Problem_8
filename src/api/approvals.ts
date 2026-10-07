@@ -31,13 +31,15 @@ export const approvalsApi = {
     action: 'approve' | 'reject' | 'request_correction',
     comments?: string,
     userName?: string,
-    userRole?: string
+    userRole?: string,
+    actorRole?: string
   ): Promise<ApprovalRecord> => {
     const res = await apiClient.post<ApprovalRecord>(`/approvals/${id}/action`, {
       action,
       comments,
       userName,
       userRole,
+      actorRole,
     });
     return res.data;
   }

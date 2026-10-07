@@ -27,6 +27,7 @@ import {
   Eye
 } from 'lucide-react';
 import { Card, CardHeader } from '../components/common/Card';
+import { canActOnStage, awaitingStageLabel } from '../utils/workflow';
 import { Button } from '../components/common/Button';
 import { ProgressBar } from '../components/common/ProgressBar';
 import { StatusBadge } from '../components/common/StatusBadge';
@@ -76,21 +77,22 @@ export const ProjectDetail: React.FC = () => {
   const approvalActionMutation = useMutation({
     mutationFn: async ({ action, comments }: { action: 'approve' | 'request_correction'; comments: string }) => {
       const dynamicWfId = project?.workflows?.[0]?.id || `wf-${(proj.code || id).toLowerCase()}-env` || id;
-      await approvalsApi.actionApproval(
+      return await approvalsApi.actionApproval(
         dynamicWfId,
         action,
         comments,
-        user?.name || (role === 'bu_manager' ? 'Vikram Malhotra' : role === 'subsidiary_admin' ? 'Sunita Rao' : 'Approver'),
-        user?.roleTitle || (role === 'bu_manager' ? 'BU Manager' : role === 'subsidiary_admin' ? 'Subsidiary Admin' : 'Reviewer')
+        user?.name || 'Approver',
+        user?.roleTitle || 'Reviewer',
+        role
       );
-      await projectsApi.updateProject(id, {
-        approvalStatus: action === 'approve' 
-          ? (role === 'subsidiary_admin' ? 'under_esg_review' : 'under_subsidiary_review')
-          : 'correction_required',
-      });
+    },
+    onError: (err: any) => {
+      addToast('Action Not Allowed', err?.response?.data?.error || 'Unable to update the approval workflow', 'error');
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['project', id] });
+      queryClient.invalidateQueries({ queryKey: ['approval'] });
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       queryClient.invalidateQueries({ queryKey: ['approvals'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
@@ -480,6 +482,7 @@ export const ProjectDetail: React.FC = () => {
                 </Button>
               </div>
 
+              {canActOnStage(role, proj.approvalStatus) ? (
               <div className="space-y-2 pt-2 border-t border-teal-200/60 dark:border-teal-800/60">
                 <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300">
                   BU Manager Validation Remarks / Correction Feedback:
@@ -523,6 +526,9 @@ export const ProjectDetail: React.FC = () => {
                   </Button>
                 </div>
               </div>
+              ) : (
+                <p className="text-xs text-slate-500 italic">{awaitingStageLabel(proj.approvalStatus) ? `Awaiting ${awaitingStageLabel(proj.approvalStatus)}.` : 'No review action is pending for this submission.'}</p>
+              )}
             </Card>
           ) : proj.approvalStatus === 'under_subsidiary_review' ? (
             <Card className="p-5 border-2 border-emerald-500/50 bg-emerald-50/20 dark:bg-emerald-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
@@ -540,6 +546,7 @@ export const ProjectDetail: React.FC = () => {
                   Disclosures have passed BU verification and AI anomaly checks. Ready for Subsidiary Admin Sunita Rao to sign off for ESG team consolidation.
                 </p>
               </div>
+              {canActOnStage(role, proj.approvalStatus) ? (
               <Button
                 variant="primary"
                 size="sm"
@@ -555,6 +562,7 @@ export const ProjectDetail: React.FC = () => {
               >
                 Sign Off as Subsidiary Admin
               </Button>
+              ) : null}
             </Card>
           ) : proj.approvalStatus === 'draft' ? (
             <Card className="p-4 border border-amber-300 dark:border-amber-800/80 bg-amber-50/20 dark:bg-amber-950/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
@@ -887,6 +895,7 @@ export const ProjectDetail: React.FC = () => {
               />
             </div>
 
+            {canActOnStage(role, proj.approvalStatus) ? (
             <div className="flex flex-col sm:flex-row items-center justify-end gap-3 pt-2">
               <Button
                 variant="outline"
@@ -920,6 +929,9 @@ export const ProjectDetail: React.FC = () => {
                 Approve Submission
               </Button>
             </div>
+            ) : (
+              <p className="text-xs text-slate-500 italic">{awaitingStageLabel(proj.approvalStatus) ? `Awaiting ${awaitingStageLabel(proj.approvalStatus)}.` : 'No review action is pending for this submission.'}</p>
+            )}
           </Card>
         </div>
       )}

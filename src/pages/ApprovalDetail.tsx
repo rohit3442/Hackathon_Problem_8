@@ -19,6 +19,7 @@ import { Button } from '../components/common/Button';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { approvalsApi } from '../api';
+import { normalizeRole } from '../utils/workflow';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import confetti from 'canvas-confetti';
@@ -44,7 +45,8 @@ export const ApprovalDetail: React.FC = () => {
         action,
         commentText,
         user?.name || 'Authorized Reviewer',
-        user?.roleTitle || 'Compliance Officer'
+        user?.roleTitle || 'Compliance Officer',
+        user?.role
       );
     },
     onSuccess: (data, variables) => {
@@ -85,20 +87,10 @@ export const ApprovalDetail: React.FC = () => {
   };
 
   // Determine allowed actions based on current user's role
-  const role = user?.role || 'project_user';
-  const isBUManager = role === 'bu_manager' || role === 'group_admin';
-  const isSubAdmin = role === 'subsidiary_admin' || role === 'group_admin';
-  const isESGTeam = role === 'esg_team' || role === 'group_admin';
-  const isFinalApprover = role === 'management' || role === 'group_admin';
-
   const stepIdx = wf.currentStepIndex ?? 0;
-  const canApprove = (
-    (stepIdx === 1 && isBUManager) ||
-    (stepIdx === 2 && isSubAdmin) ||
-    (stepIdx === 3 && isESGTeam) ||
-    (stepIdx >= 4 && isFinalApprover) ||
-    role === 'group_admin'
-  );
+  const currentStepRole = wf.steps?.[stepIdx]?.role || wf.steps?.[stepIdx]?.roleKey;
+  const isActionable = stepIdx >= 1 && !['approved', 'correction_required', 'draft'].includes(wf.overallStatus);
+  const canApprove = isActionable && normalizeRole(currentStepRole) === normalizeRole(user?.role);
 
   return (
     <div className="space-y-6">
