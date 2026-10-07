@@ -26,6 +26,12 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
       return <Badge variant="blue" size={size} dot className={className}>Submitted</Badge>;
     case 'under_review':
       return <Badge variant="amber" size={size} dot className={className}>Under Review</Badge>;
+    case 'under_subsidiary_review':
+      return <Badge variant="amber" size={size} dot className={className}>Subsidiary Review</Badge>;
+    case 'under_esg_review':
+      return <Badge variant="blue" size={size} dot className={className}>ESG Validation</Badge>;
+    case 'under_management_review':
+      return <Badge variant="purple" size={size} dot className={className}>Final Signoff Pending</Badge>;
     case 'correction_required':
       return <Badge variant="rose" size={size} dot className={className}>Correction Required</Badge>;
     case 'validated':

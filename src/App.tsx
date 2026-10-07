@@ -39,6 +39,10 @@ import { AIAnomalies } from './pages/AIAnomalies';
 // Approvals
 import { ApprovalCenter } from './pages/ApprovalCenter';
 import { ApprovalDetail } from './pages/ApprovalDetail';
+import { ReviewCenter } from './pages/ReviewCenter';
+import { ReviewSubmissionDetail } from './pages/ReviewSubmissionDetail';
+import { CorrectionRequests } from './pages/CorrectionRequests';
+import { Consolidation } from './pages/Consolidation';
 
 // Analytics, SDGs, Reports, Audit
 import { Analytics } from './pages/Analytics';
@@ -114,6 +118,10 @@ export const App: React.FC = () => {
                   {/* Approval Center */}
                   <Route path="approvals" element={<ApprovalCenter />} />
                   <Route path="approvals/:id" element={<ApprovalDetail />} />
+                  <Route path="review-center" element={<ReviewCenter />} />
+                  <Route path="review-center/:submissionId" element={<ReviewSubmissionDetail />} />
+                  <Route path="correction-requests" element={<CorrectionRequests />} />
+                  <Route path="consolidation" element={<Consolidation />} />
 
                   {/* Analytics & Outputs */}
                   <Route path="analytics" element={<Analytics />} />

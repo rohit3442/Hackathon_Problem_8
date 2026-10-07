@@ -28,7 +28,10 @@ import {
   Award,
   AlertTriangle
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../../context/AuthContext';
+import { projectsApi, reviewsApi } from '../../api';
+import { isAwaitingBUReview } from '../../utils/workflow';
 import { useApp } from '../../context/AppContext';
 
 interface SidebarProps {
@@ -65,6 +68,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const role = user?.role || 'project_user';
 
+  const { data: projects = [] } = useQuery({
+    queryKey: ['projects'],
+    queryFn: projectsApi.getProjects,
+    enabled: role === 'bu_manager',
+  });
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['reviews'],
+    queryFn: () => reviewsApi.getReviews(),
+    enabled: role === 'bu_manager',
+  });
+  const countBadge = (n: number) => (n > 0 ? String(n) : undefined);
+  const pendingReviewCount = projects.filter((p) => isAwaitingBUReview(p.approvalStatus)).length;
+  const openCorrectionCount = reviews.filter(
+    (r: { status?: string }) => r.status === 'CORRECTION_REQUESTED' || r.status === 'CORRECTION_SUBMITTED'
+  ).length;
+
   // Role-Specific Navigation as mandated by Section 5 of the Master Specification
   const getNavGroupsForRole = (): NavGroup[] => {
     switch (role) {
@@ -93,8 +112,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             items: [
               { name: 'BU Dashboard', path: '/dashboard', icon: LayoutDashboard },
               { name: 'Projects', path: '/projects', icon: FolderKanban },
-              { name: 'Review Center', path: '/review-center', icon: FileCheck2, badge: '3' },
-              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle, badge: '5' },
+              { name: 'Review Center', path: '/review-center', icon: FileCheck2, badge: countBadge(pendingReviewCount) },
+              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle, badge: countBadge(openCorrectionCount) },
               { name: 'Approvals', path: '/approvals', icon: CheckCircle },
               { name: 'BU Analytics', path: '/analytics', icon: BarChart3 },
             ],
@@ -127,6 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               { name: 'BRSR Section A (General)', path: '/brsr/section-a', icon: FileSpreadsheet, indent: true },
               { name: 'BRSR Section B (Process)', path: '/brsr/section-b', icon: FileSpreadsheet, indent: true },
               { name: 'BRSR Section C (P1-P9)', path: '/brsr/section-c', icon: FileSpreadsheet, indent: true, badge: 'P1-P9' },
+              { name: 'Approvals', path: '/approvals', icon: CheckCircle },
               { name: 'SDG Mapping', path: '/sdg-mapping', icon: Globe2 },
               { name: 'Analytics', path: '/analytics', icon: BarChart3 },
               { name: 'Reports', path: '/reports', icon: FileText },
@@ -149,6 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               { name: 'ESG Monitoring', path: '/analytics', icon: Database },
               { name: 'BRSR', path: '/brsr', icon: FileSpreadsheet },
               { name: 'Approvals', path: '/approvals', icon: CheckCircle },
+              { name: 'Consolidation', path: '/consolidation', icon: Layers },
               { name: 'Reports', path: '/reports', icon: FileText },
               { name: 'Users & Roles', path: '/users', icon: UserCog },
               { name: 'Audit Trail', path: '/audit-trail', icon: History },

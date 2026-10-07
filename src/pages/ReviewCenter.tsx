@@ -21,6 +21,7 @@ import { Button } from '../components/common/Button';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { ProgressBar } from '../components/common/ProgressBar';
 import { projectsApi, reviewsApi, organizationApi } from '../api';
+import { isAwaitingBUReview, isPastBUReview } from '../utils/workflow';
 import { useAuth } from '../context/AuthContext';
 
 export const ReviewCenter: React.FC = () => {
@@ -68,19 +69,19 @@ export const ReviewCenter: React.FC = () => {
       if (selectedBU !== 'all' && p.businessUnitId !== selectedBU) return false;
       // Filter by Status
       if (selectedStatus !== 'all') {
-        if (selectedStatus === 'pending' && p.approvalStatus !== 'submitted' && p.approvalStatus !== 'under_review') return false;
+        if (selectedStatus === 'pending' && !isAwaitingBUReview(p.approvalStatus)) return false;
         if (selectedStatus === 'correction' && p.approvalStatus !== 'correction_required') return false;
-        if (selectedStatus === 'approved' && p.approvalStatus !== 'under_subsidiary_review' && p.approvalStatus !== 'approved') return false;
+        if (selectedStatus === 'approved' && !isPastBUReview(p.approvalStatus)) return false;
       }
       return true;
     });
   }, [projects, searchQuery, selectedPeriod, selectedStatus, selectedBU]);
 
   // Aggregate Stats
-  const pendingCount = projects.filter(p => p.approvalStatus === 'submitted' || p.approvalStatus === 'under_review').length;
+  const pendingCount = projects.filter(p => isAwaitingBUReview(p.approvalStatus)).length;
   const correctionCount = reviews.filter(r => r.status === 'CORRECTION_REQUESTED' || r.status === 'CORRECTION_SUBMITTED').length;
   const resolvedCount = reviews.filter(r => r.status === 'RESOLVED' || r.status === 'APPROVED').length;
-  const approvedCount = projects.filter(p => p.approvalStatus === 'under_subsidiary_review' || p.approvalStatus === 'approved').length;
+  const approvedCount = projects.filter(p => isPastBUReview(p.approvalStatus)).length;
 
   return (
     <div className="space-y-6">
@@ -267,9 +268,9 @@ export const ReviewCenter: React.FC = () => {
               const totalItems = Math.max(projectReviews.length, 6);
               const reviewProgress = Math.round((resolvedCount / totalItems) * 100);
 
-              const isAwaitingSignoff = p.approvalStatus === 'submitted' || p.approvalStatus === 'under_review';
+              const isAwaitingSignoff = isAwaitingBUReview(p.approvalStatus);
               const isCorrectionRequired = p.approvalStatus === 'correction_required';
-              const isApproved = p.approvalStatus === 'under_subsidiary_review' || p.approvalStatus === 'approved';
+              const isApproved = isPastBUReview(p.approvalStatus);
 
               return (
                 <Card 

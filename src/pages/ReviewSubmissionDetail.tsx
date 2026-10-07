@@ -33,6 +33,7 @@ import { StatusBadge } from '../components/common/StatusBadge';
 import { ProgressBar } from '../components/common/ProgressBar';
 import { Modal } from '../components/common/Modal';
 import { projectsApi, reviewsApi, approvalsApi } from '../api';
+import { canActOnStage } from '../utils/workflow';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../context/AppContext';
 import { ReviewRequest, ReviewThreadMessage } from '../types';
@@ -120,7 +121,8 @@ export const ReviewSubmissionDetail: React.FC = () => {
   }, [reviews, sectionIssues]);
 
   const checklistCompleted = checklist.filter(c => c.checked).length;
-  const canApprove = checklistCompleted === checklist.length;
+  const isBUStageOpen = canActOnStage(user?.role, project?.approvalStatus);
+  const canApprove = checklistCompleted === checklist.length && isBUStageOpen;
 
   // Mutation: Create or Update Review Request (Draft or Direct Send)
   const saveReviewMutation = useMutation({
@@ -248,7 +250,8 @@ export const ReviewSubmissionDetail: React.FC = () => {
         'approve',
         'All reported metrics audited and verified in BU Review Center. Forwarded to Subsidiary Admin for Stage 3 signoff.',
         user?.name || 'Vikram Malhotra',
-        'BU Manager'
+        'BU Manager',
+      user?.role
       );
     },
     onSuccess: () => {
@@ -775,7 +778,7 @@ export const ReviewSubmissionDetail: React.FC = () => {
                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm' 
                 : 'opacity-50 cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-800 dark:text-slate-500'
             }`}
-            title={canApprove ? 'Approve & forward to Subsidiary Admin' : 'Resolve all pending correction items before approving'}
+            title={canApprove ? 'Approve & forward to Subsidiary Admin' : !isBUStageOpen ? 'This submission is not awaiting BU Manager review' : 'Complete the review checklist before approving'}
           >
             Approve Submission & Forward to Subsidiary
           </Button>
