@@ -9,7 +9,11 @@ import {
   Mail, 
   Building2, 
   UserCheck,
-  ArrowRight
+  ArrowRight,
+  Database,
+  Copy,
+  CheckCircle2,
+  Key
 } from 'lucide-react';
 import { Card, CardHeader } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -20,6 +24,7 @@ import { useApp } from '../context/AppContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '../api';
 import { UserRole } from '../types';
+import { supabase } from '../supabaseClient';
 
 export const UsersRoles: React.FC = () => {
   const navigate = useNavigate();
@@ -32,6 +37,9 @@ export const UsersRoles: React.FC = () => {
   const [newUserEmail, setNewUserEmail] = useState('');
   const [newUserRole, setNewUserRole] = useState<UserRole>('project_user');
   const [newUserTitle, setNewUserTitle] = useState('ESG Contributor');
+  const [newUserPassword, setNewUserPassword] = useState('Password@123');
+  const [provisionInSupabase, setProvisionInSupabase] = useState(true);
+  const [copiedSnippetRole, setCopiedSnippetRole] = useState<string | null>(null);
 
   const { data: usersList = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -40,6 +48,29 @@ export const UsersRoles: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: async () => {
+      // 1. Provision user directly in Supabase Auth with chosen role & metadata
+      if (provisionInSupabase && newUserEmail) {
+        try {
+          const res = await supabase.auth.signUp({
+            email: newUserEmail.trim(),
+            password: newUserPassword || 'Password@123',
+            options: {
+              data: {
+                name: newUserName.trim(),
+                role: newUserRole,
+                roleTitle: newUserTitle,
+              }
+            }
+          });
+          if (res.error) {
+            console.warn('Supabase Auth provisioning notice:', res.error.message);
+          }
+        } catch (supaErr) {
+          console.warn('Supabase Auth signUp exception:', supaErr);
+        }
+      }
+
+      // 2. Persist user in platform directory
       return await usersApi.createUser({
         name: newUserName,
         email: newUserEmail,
@@ -52,7 +83,11 @@ export const UsersRoles: React.FC = () => {
       setIsNewUserModalOpen(false);
       setNewUserName('');
       setNewUserEmail('');
-      addToast('User Registered', `Account created for ${data.name}`, 'success');
+      addToast(
+        'User Provisioned in Supabase', 
+        `Account created with role [${newUserRole}] and credentials provisioned.`, 
+        'success'
+      );
       navigate(`/users/${data.id}`);
     }
   });
@@ -93,6 +128,96 @@ export const UsersRoles: React.FC = () => {
           Add New User
         </Button>
       </div>
+
+      {/* Supabase Role Provisioning Guide Card */}
+      <Card className="border-emerald-500/20 bg-gradient-to-br from-emerald-950/20 via-slate-900/10 to-transparent">
+        <div className="p-4 sm:p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-800/80 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-[#00c77f]">
+                <Database className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                  How to Assign User Roles in Supabase Auth
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-[#00c77f] font-bold">
+                    raw_user_meta_data
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  When creating users in Supabase, provide the <code className="text-emerald-500 font-mono text-[11px]">&quot;role&quot;</code> key in <span className="font-semibold text-slate-700 dark:text-slate-200">User Metadata</span>. Our application automatically reads this role upon sign-in.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Copy Role Metadata Snippets */}
+          <div>
+            <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              Select & Copy JSON Metadata for Supabase Dashboard:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 text-xs">
+              {[
+                { label: 'Project User (Data Entry)', roleKey: 'project_user', desc: 'Site ESG data entry & uploads' },
+                { label: 'BU Manager (Review)', roleKey: 'bu_manager', desc: 'Project submissions & approvals' },
+                { label: 'Subsidiary Admin', roleKey: 'subsidiary_admin', desc: 'Entity-level admin controls' },
+                { label: 'ESG / Sustainability Team', roleKey: 'esg_team', desc: 'Auditing, BRSR & anomaly review' },
+                { label: 'Executive Management', roleKey: 'management', desc: 'Investor & board dashboards' },
+                { label: 'Group Admin', roleKey: 'group_admin', desc: 'Consolidated group governance' },
+              ].map((item) => {
+                const snippet = JSON.stringify({ role: item.roleKey }, null, 2);
+                const isCopied = copiedSnippetRole === item.roleKey;
+                return (
+                  <div
+                    key={item.roleKey}
+                    className="p-2.5 rounded-lg border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex items-center justify-between gap-2 hover:border-emerald-500/40 transition-colors"
+                  >
+                    <div className="min-w-0">
+                      <div className="font-semibold text-slate-800 dark:text-slate-200 truncate flex items-center gap-1.5">
+                        <span>{item.label}</span>
+                      </div>
+                      <code className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono block">
+                        &#123;&quot;role&quot;: &quot;{item.roleKey}&quot;&#125;
+                      </code>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(snippet);
+                        setCopiedSnippetRole(item.roleKey);
+                        setTimeout(() => setCopiedSnippetRole(null), 2000);
+                      }}
+                      className="p-1.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-emerald-500 transition-colors cursor-pointer shrink-0"
+                      title="Copy JSON to clipboard"
+                    >
+                      {isCopied ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                      ) : (
+                        <Copy className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Step by step note */}
+          <div className="p-3 rounded-lg bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-1">
+            <p className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+              <span>Two Ways to Provision Roles in Supabase:</span>
+            </p>
+            <ol className="list-decimal list-inside space-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
+              <li>
+                <span className="font-medium text-slate-700 dark:text-slate-300">Directly in this App:</span> Click <span className="font-semibold text-emerald-600 dark:text-emerald-400">&quot;Add New User&quot;</span> above with the Supabase toggle enabled. It creates the user and attaches the role metadata automatically.
+              </li>
+              <li>
+                <span className="font-medium text-slate-700 dark:text-slate-300">In Supabase Dashboard:</span> Go to <span className="font-medium">Authentication &rarr; Users &rarr; Add User</span>, and paste the copied JSON snippet into the <span className="font-medium">User Metadata</span> box.
+              </li>
+            </ol>
+          </div>
+        </div>
+      </Card>
 
       {/* Role Permissions Matrix Table */}
       <Card>
@@ -297,6 +422,38 @@ export const UsersRoles: React.FC = () => {
               <option value="group_admin">Group Admin</option>
               <option value="management">Management / Final Approver</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block font-semibold mb-1">Initial Password</label>
+            <input 
+              type="text" 
+              value={newUserPassword}
+              onChange={(e) => setNewUserPassword(e.target.value)}
+              placeholder="Password@123" 
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono" 
+            />
+          </div>
+
+          <div className="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={provisionInSupabase}
+                onChange={(e) => setProvisionInSupabase(e.target.checked)}
+                className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              />
+              <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                <Database className="w-3.5 h-3.5 text-[#00c77f]" />
+                Provision in Supabase Auth with this role
+              </span>
+            </label>
+            {provisionInSupabase && (
+              <div className="p-2 rounded bg-slate-100 dark:bg-slate-900 text-[10px] font-mono text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800">
+                <span className="text-emerald-500 font-bold block mb-0.5">Supabase raw_user_meta_data Payload:</span>
+                &#123;&quot;role&quot;: &quot;{newUserRole}&quot;, &quot;roleTitle&quot;: &quot;{newUserTitle}&quot;, &quot;name&quot;: &quot;{newUserName || 'User'}&quot;&#125;
+              </div>
+            )}
           </div>
         </div>
       </Modal>

@@ -36,7 +36,7 @@ import { useApp } from '../context/AppContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { projectsApi, esgApi, validationApi, approvalsApi } from '../api';
 import confetti from 'canvas-confetti';
-import { exportProjectDossierPDF } from '../utils/pdfExport';
+import { exportProjectDossierPDF, exportSubmittedDataPDF } from '../utils/pdfExport';
 import { EvidenceManager } from '../components/evidence/EvidenceManager';
 import { AiValidationCenter } from '../components/validation/AiValidationCenter';
 
@@ -145,6 +145,41 @@ export const ProjectDetail: React.FC = () => {
   const [aiAnomalyData, setAiAnomalyData] = useState<any>(null);
   const [isAiChecking, setIsAiChecking] = useState(false);
 
+  // Post-submission success modal state
+  const [showSubmittedModal, setShowSubmittedModal] = useState(false);
+
+  const handleDownloadSubmittedPDF = () => {
+    try {
+      exportSubmittedDataPDF({
+        project: proj,
+        envData: {
+          electricityKwh: electricity,
+          fuelLitres: fuel,
+          renewableEnergyPct: renewablePct,
+          totalEnergyGj: Number(((electricity * 0.0036) + (fuel * 0.038)).toFixed(1)),
+          scope1GhgTco2e: Number(project?.environmentalData?.scope1GhgTco2e) || Math.round((fuel * 2.68) / 1000),
+          scope2GhgTco2e: Number(project?.environmentalData?.scope2GhgTco2e) || Math.round((electricity * (1 - (renewablePct / 100)) * 0.82) / 1000),
+          waterWithdrawalKl: waterWithdrawal,
+          waterConsumptionKl: waterConsumption,
+          waterRecycledKl: waterRecycled,
+          hazardousWasteMt: hazardousWaste,
+          nonHazardousWasteMt: nonHazardousWaste,
+          evidenceAttached: evidenceName,
+          remarks
+        },
+        socData: project?.socialData || undefined,
+        govData: project?.governanceData || undefined,
+        submittedBy: user?.name || proj.leadPerson || 'Rajesh Verma (Project Manager)',
+        submittedTo: 'Vikram Malhotra (BU Manager)',
+        submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 16),
+      });
+      addToast('Download Complete', `Downloaded official submission PDF for ${proj.code}`, 'success');
+    } catch (e: any) {
+      console.error('PDF generation error:', e);
+      addToast('Download Failed', 'Could not generate PDF receipt', 'error');
+    }
+  };
+
   // Populate from existing project data when loaded
   useEffect(() => {
     if (project?.environmentalData) {
@@ -249,6 +284,7 @@ export const ProjectDetail: React.FC = () => {
         confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
       } catch (e) {}
       addToast('Submitted to BU Manager', `Disclosures & telemetry for ${proj.name} submitted to BU Manager Vikram Malhotra for validation`, 'success');
+      setShowSubmittedModal(true);
       navigate(`/projects/${id}/submissions`);
     }
   });
@@ -341,6 +377,18 @@ export const ProjectDetail: React.FC = () => {
             Enter ESG Data
           </Button>
 
+          {proj.approvalStatus !== 'draft' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownloadSubmittedPDF}
+              icon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+              className="border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs font-medium"
+            >
+              Download Submitted PDF
+            </Button>
+          )}
+
           <Button
             variant="outline"
             size="sm"
@@ -421,6 +469,15 @@ export const ProjectDetail: React.FC = () => {
                     Operational telemetry and evidence documents have been uploaded. BU Manager check and validation is required before forwarding to Subsidiary Admin Sunita Rao.
                   </p>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadSubmittedPDF}
+                  icon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+                  className="border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-xs shrink-0 font-medium"
+                >
+                  Download Submitted PDF
+                </Button>
               </div>
 
               <div className="space-y-2 pt-2 border-t border-teal-200/60 dark:border-teal-800/60">
@@ -916,6 +973,17 @@ export const ProjectDetail: React.FC = () => {
               >
                 Save Draft
               </Button>
+              {proj.approvalStatus !== 'draft' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadSubmittedPDF}
+                  icon={<Download className="w-3.5 h-3.5 text-emerald-600" />}
+                  className="border-emerald-500/50 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 text-xs"
+                >
+                  Download Submitted PDF
+                </Button>
+              )}
               <Button
                 variant="primary"
                 size="sm"
@@ -924,7 +992,7 @@ export const ProjectDetail: React.FC = () => {
                 icon={<Send className="w-3.5 h-3.5" />}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                Submit to BU Manager
+                {proj.approvalStatus === 'draft' ? 'Submit to BU Manager' : 'Resubmit to BU Manager'}
               </Button>
             </div>
           </div>
@@ -1482,6 +1550,39 @@ export const ProjectDetail: React.FC = () => {
             </Card>
           )}
 
+          {/* Official Submitted Data Package & PDF Download Card */}
+          <Card className="p-5 border border-emerald-500/40 bg-white dark:bg-slate-900 shadow-xs space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 shrink-0">
+                  <FileCheck2 className="w-5 h-5" />
+                </div>
+                <div className="space-y-0.5">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                      Official Submitted Data Package & Receipt (PDF)
+                    </h4>
+                    <span className="px-2 py-0.5 text-[10px] rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 font-semibold">
+                      {proj.approvalStatus === 'draft' ? 'Draft Telemetry Package' : 'Attested Submission'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Download the complete submission PDF containing verified Environmental metrics ({electricity.toLocaleString()} kWh grid electricity, {fuel.toLocaleString()} L diesel, {renewablePct}% clean energy), GHG Scope 1/2 calculations, Social census, and the 5-stage signoff authorization audit trail.
+                  </p>
+                </div>
+              </div>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleDownloadSubmittedPDF}
+                icon={<Download className="w-4 h-4" />}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold whitespace-nowrap shadow-sm shrink-0"
+              >
+                Download Submitted Data (PDF)
+              </Button>
+            </div>
+          </Card>
+
           {/* 5-Stage Enterprise Governance Progress Timeline */}
           <Card className="p-5 space-y-4">
             <CardHeader
@@ -1588,6 +1689,101 @@ export const ProjectDetail: React.FC = () => {
               }}
             >
               Accept & Submit to Review
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Post-Submission Success & Download Submitted Data PDF Modal */}
+      <Modal
+        isOpen={showSubmittedModal}
+        onClose={() => setShowSubmittedModal(false)}
+        title="Data Submitted to BU Manager"
+      >
+        <div className="space-y-4 text-xs">
+          <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-emerald-500/5 border border-emerald-500/30 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0 shadow-sm mt-0.5">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                  Submission Successfully Transferred
+                </h4>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                  Stage 2 Review
+                </span>
+              </div>
+              <p className="text-slate-600 dark:text-slate-300">
+                Disclosures and telemetry for <strong>{proj.name} ({proj.code})</strong> have been officially submitted to Business Unit Manager <strong>Vikram Malhotra</strong> for statutory review and validation.
+              </p>
+            </div>
+          </div>
+
+          {/* Submission Summary Table */}
+          <div className="bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+            <p className="font-bold text-slate-800 dark:text-slate-200 text-xs">
+              Submitted Telemetry & Indicator Digest:
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px]">
+              <div className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <span className="text-slate-400 block text-[10px]">Electricity (Grid)</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{Number(electricity).toLocaleString()} kWh</span>
+              </div>
+              <div className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <span className="text-slate-400 block text-[10px]">Stationary Diesel</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{Number(fuel).toLocaleString()} Litres</span>
+              </div>
+              <div className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <span className="text-slate-400 block text-[10px]">Renewable Energy</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{renewablePct}%</span>
+              </div>
+              <div className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <span className="text-slate-400 block text-[10px]">Calculated Energy</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{Number(((electricity * 0.0036) + (fuel * 0.038)).toFixed(1))} GJ</span>
+              </div>
+              <div className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <span className="text-slate-400 block text-[10px]">Freshwater Withdrawal</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{Number(waterWithdrawal).toLocaleString()} kL</span>
+              </div>
+              <div className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <span className="text-slate-400 block text-[10px]">Recycled Water</span>
+                <span className="font-bold text-slate-900 dark:text-slate-100">{Number(waterRecycled).toLocaleString()} kL</span>
+              </div>
+            </div>
+            <div className="text-[10px] text-slate-500 pt-1 flex items-center justify-between">
+              <span>Forwarded To: Vikram Malhotra (BU Manager)</span>
+              <span>Attested By: {user?.name || proj.leadPerson || 'Rajesh Verma'}</span>
+            </div>
+          </div>
+
+          <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 flex items-center gap-2.5">
+            <Download className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+            <p className="text-[11px] text-emerald-900 dark:text-emerald-200">
+              You can now download the official immutable PDF submission receipt, signed with cryptographic SHA256 audit reference.
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowSubmittedModal(false)}
+              className="w-full sm:w-auto"
+            >
+              Close & View Pipeline
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => {
+                handleDownloadSubmittedPDF();
+              }}
+              icon={<Download className="w-4 h-4" />}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold w-full sm:w-auto shadow-sm"
+            >
+              Download Submitted Data (PDF)
             </Button>
           </div>
         </div>

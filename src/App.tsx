@@ -36,9 +36,12 @@ import { ValidationCenter } from './pages/ValidationCenter';
 import { ValidationDetail } from './pages/ValidationDetail';
 import { AIAnomalies } from './pages/AIAnomalies';
 
-// Approvals
+// Approvals & Reviews
 import { ApprovalCenter } from './pages/ApprovalCenter';
 import { ApprovalDetail } from './pages/ApprovalDetail';
+import { ReviewCenter } from './pages/ReviewCenter';
+import { ReviewSubmissionDetail } from './pages/ReviewSubmissionDetail';
+import { CorrectionRequests } from './pages/CorrectionRequests';
 
 // Analytics, SDGs, Reports, Audit
 import { Analytics } from './pages/Analytics';
@@ -62,6 +65,7 @@ export const App: React.FC = () => {
               <Routes>
                 {/* Public Auth Route */}
                 <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Navigate to="/login" replace />} />
 
                 {/* Main Enterprise App Shell */}
                 <Route path="/" element={<AppLayout />}>
@@ -111,9 +115,15 @@ export const App: React.FC = () => {
                   <Route path="validation/anomalies" element={<AIAnomalies />} />
                   <Route path="validation/:id" element={<ValidationDetail />} />
 
-                  {/* Approval Center */}
+                  {/* Approval Center, Review Center & Correction Requests */}
                   <Route path="approvals" element={<ApprovalCenter />} />
                   <Route path="approvals/:id" element={<ApprovalDetail />} />
+                  <Route path="review-center" element={<ReviewCenter />} />
+                  <Route path="review-center/:submissionId" element={<ReviewSubmissionDetail />} />
+                  <Route path="reviews" element={<ReviewCenter />} />
+                  <Route path="reviews/:submissionId" element={<ReviewSubmissionDetail />} />
+                  <Route path="correction-requests" element={<CorrectionRequests />} />
+                  <Route path="consolidation" element={<Analytics />} />
 
                   {/* Analytics & Outputs */}
                   <Route path="analytics" element={<Analytics />} />

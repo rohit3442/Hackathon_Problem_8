@@ -26,7 +26,8 @@ import {
   Bell,
   CheckCircle2,
   Award,
-  AlertTriangle
+  AlertTriangle,
+  ShieldAlert
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useApp } from '../../context/AppContext';
@@ -82,6 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               { name: 'Documents', path: '/projects/proj-1/documents', icon: Upload, indent: true },
               { name: 'Validation & AI', path: '/projects/proj-1/validation', icon: Sparkles, indent: true },
               { name: 'Submissions', path: '/projects/proj-1/submissions', icon: CheckCircle, indent: true, badge: 'Submit' },
+              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle, badge: 'Issues' },
             ],
           },
         ];
@@ -93,8 +95,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             items: [
               { name: 'BU Dashboard', path: '/dashboard', icon: LayoutDashboard },
               { name: 'Projects', path: '/projects', icon: FolderKanban },
-              { name: 'Review Center', path: '/review-center', icon: FileCheck2, badge: '3' },
-              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle, badge: '5' },
+              { name: 'Review Center', path: '/review-center', icon: FileCheck2, badge: 'Active' },
+              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle, badge: 'Review' },
               { name: 'Approvals', path: '/approvals', icon: CheckCircle },
               { name: 'BU Analytics', path: '/analytics', icon: BarChart3 },
             ],
@@ -110,8 +112,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               { name: 'Organization', path: '/organization', icon: Building2 },
               { name: 'Business Units', path: '/business-units', icon: Layers },
               { name: 'Projects', path: '/projects', icon: FolderKanban },
+              { name: 'Review Center', path: '/review-center', icon: FileCheck2 },
+              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle },
+              { name: 'Approvals & Signoff', path: '/approvals', icon: CheckCircle },
               { name: 'ESG Monitoring', path: '/analytics', icon: Database },
-              { name: 'Reviews', path: '/approvals', icon: FileCheck2 },
               { name: 'Reports', path: '/reports', icon: FileText },
             ],
           },
@@ -123,7 +127,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             title: 'ESG CONTROL CENTER',
             items: [
               { name: 'ESG Control Center', path: '/dashboard', icon: LayoutDashboard },
-              { name: 'Validation', path: '/validation', icon: FileCheck2, alertCount: 2 },
+              { name: 'Review Center', path: '/review-center', icon: FileCheck2 },
+              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle },
+              { name: 'Validation & AI', path: '/validation', icon: ShieldAlert, alertCount: 2 },
               { name: 'BRSR Section A (General)', path: '/brsr/section-a', icon: FileSpreadsheet, indent: true },
               { name: 'BRSR Section B (Process)', path: '/brsr/section-b', icon: FileSpreadsheet, indent: true },
               { name: 'BRSR Section C (P1-P9)', path: '/brsr/section-c', icon: FileSpreadsheet, indent: true, badge: 'P1-P9' },
@@ -146,6 +152,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               { name: 'Subsidiaries', path: '/subsidiaries', icon: Layers },
               { name: 'Business Units', path: '/business-units', icon: Building2 },
               { name: 'Projects', path: '/projects', icon: FolderKanban },
+              { name: 'Review Center', path: '/review-center', icon: FileCheck2 },
+              { name: 'Correction Requests', path: '/correction-requests', icon: AlertTriangle },
               { name: 'ESG Monitoring', path: '/analytics', icon: Database },
               { name: 'BRSR', path: '/brsr', icon: FileSpreadsheet },
               { name: 'Approvals', path: '/approvals', icon: CheckCircle },

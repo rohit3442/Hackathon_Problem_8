@@ -225,6 +225,16 @@
   ],
   "users": [
     {
+      "id": "u-gmail-1791357988726",
+      "name": "Rohit Kumar Sahu",
+      "email": "rohitkumarsahu144@gmail.com",
+      "corporateId": "GMAIL-ROHITKUM",
+      "role": "group_admin",
+      "roleTitle": "ESG Professional",
+      "organization": "Apex Infrastructure Group",
+      "avatar": "https://api.dicebear.com/7.x/initials/svg?seed=Rohit%20Kumar%20Sahu&backgroundColor=00c77f"
+    },
+    {
       "id": "u-1",
       "name": "Rajesh Verma",
       "email": "rajesh.verma@meil.in",
@@ -1680,6 +1690,28 @@
     }
   ],
   "audit_logs": [
+    {
+      "id": "aud-1791357995769-25",
+      "timestamp": "2026-10-07 07:26:35",
+      "userName": "Rohit Kumar Sahu",
+      "userRole": "ESG Professional",
+      "action": "Google OAuth Login",
+      "entity": "Session",
+      "entityId": "u-gmail-1791357988726",
+      "newValue": "Signed in via Gmail (rohitkumarsahu144@gmail.com) as group_admin",
+      "ipAddress": "127.0.0.1"
+    },
+    {
+      "id": "aud-1791357988727-202",
+      "timestamp": "2026-10-07 07:26:28",
+      "userName": "Rohit Kumar Sahu",
+      "userRole": "ESG Professional",
+      "action": "Google OAuth Login",
+      "entity": "Session",
+      "entityId": "u-gmail-1791357988726",
+      "newValue": "Signed in via Gmail (rohitkumarsahu144@gmail.com) as group_admin",
+      "ipAddress": "127.0.0.1"
+    },
     {
       "id": "aud-1791300657402-829",
       "timestamp": "2026-10-06 15:30:57",
