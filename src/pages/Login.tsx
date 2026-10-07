@@ -24,19 +24,19 @@ const ROLE_OPTIONS: RoleOption[] = [
     defaultPassword: 'Password@123'
   },
   {
-    id: 'bu_manager',
-    label: 'Business Unit Manager',
-    subtext: 'Review & verify project submissions & signoffs',
-    defaultIdentifier: 'vikram.malhotra@meil.in',
-    corporateId: 'EMP-PM-2089',
-    defaultPassword: 'Password@123'
-  },
-  {
     id: 'subsidiary_admin',
     label: 'Subsidiary Admin',
     subtext: 'Manage subsidiary organization & entity data',
     defaultIdentifier: 'sunita.rao@meil.in',
     corporateId: 'EMP-SA-3150',
+    defaultPassword: 'Password@123'
+  },
+  {
+    id: 'bu_manager',
+    label: 'Business Unit Manager',
+    subtext: 'Review & verify project submissions & signoffs',
+    defaultIdentifier: 'vikram.malhotra@meil.in',
+    corporateId: 'EMP-PM-2089',
     defaultPassword: 'Password@123'
   },
   {
